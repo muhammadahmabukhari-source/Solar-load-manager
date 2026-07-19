@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0A0F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SolarLoad">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Solar Load Manager</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-database-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+  :root{
+    --bg:#0A0F1A; --bg2:#0F1A2E; --card:#121B2B; --card2:#0D1421;
+    --border:#1E293B; --border2:#263348;
+    --text:#EDF2F7; --muted:#7C8BA0; --muted2:#4B5A70;
+    --sun:#FDB750; --sun2:#FF7A45; --battery:#35D0B8; --grid:#5C8DF6;
+    --pos:#35D0B8; --neg:#FF5C72;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;}
+  button,input{font-family:var(--sans);}
+  .hidden{display:none !important;}
+
+  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 96px;min-height:100vh;position:relative;}
+  .center-wrap{max-width:400px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:24px;}
+
+  /* ---------- Auth ---------- */
+  .auth-logo{font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;letter-spacing:-.01em;}
+  .auth-logo span{background:linear-gradient(90deg,var(--sun),var(--sun2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .auth-sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:28px;}
+  .auth-tabs{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px;}
+  .auth-tab{flex:1;text-align:center;padding:9px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:.2s;}
+  .auth-tab.active{background:var(--card);color:var(--text);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;}
+  .field input:focus{border-color:var(--sun);}
+  .btn{width:100%;padding:13px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+  .btn-primary{background:linear-gradient(90deg,var(--sun),var(--sun2));color:#1a1206;}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn.loading{color:transparent !important;position:relative;pointer-events:none;}
+  .btn.loading::after{content:'';position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;
+    border:2px solid rgba(26,18,6,0.3);border-top-color:#1a1206;border-radius:50%;animation:btnSpin .6s linear infinite;}
+  @keyframes btnSpin{to{transform:rotate(360deg);}}
+  .btn-google{background:var(--card2);color:var(--text);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--muted2);font-size:11px;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .auth-error{background:rgba(255,92,114,0.1);border:1px solid rgba(255,92,114,0.3);color:var(--neg);font-size:12px;padding:10px 12px;border-radius:8px;margin-bottom:14px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:10px;}
+  .topbar-left{display:flex;align-items:center;gap:10px;min-width:0;}
+  .icon-btn{width:36px;height:36px;border-radius:11px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;flex-shrink:0;font-size:16px;}
+  .icon-btn:hover{color:var(--text);}
+  .brand{font-size:16px;font-weight:800;}
+  .brand span{background:linear-gradient(90deg,var(--sun),var(--sun2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .device-title{font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .device-sub{font-size:11px;color:var(--muted);}
+
+  /* ---------- Device list ---------- */
+  .device-card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer;transition:.15s;}
+  .device-card:hover{border-color:var(--sun);}
+  .device-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+  .device-name{font-size:15px;font-weight:700;}
+  .device-id{font-size:10px;color:var(--muted2);font-family:var(--mono);margin-top:2px;}
+  .device-net{font-family:var(--mono);font-size:20px;font-weight:700;}
+  .device-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);}
+  .dot.live{background:var(--pos);box-shadow:0 0 6px var(--pos);}
+  .dot.offline{background:var(--neg);box-shadow:0 0 6px var(--neg);}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+  .empty-state h3{color:var(--text);font-size:16px;margin-bottom:6px;}
+  .empty-state p{font-size:13px;line-height:1.5;}
+  .fab{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);max-width:448px;width:calc(100% - 32px);background:linear-gradient(90deg,var(--sun),var(--sun2));color:#1a1206;border:none;border-radius:14px;padding:15px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(253,183,80,0.25);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;z-index:60;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:22px 18px 28px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
+  .modal h3{margin:0 0 6px;font-size:16px;}
+  .modal p{margin:0 0 16px;font-size:12px;color:var(--muted);line-height:1.5;}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .modal-actions .btn{flex:1;}
+
+  /* ---------- Bottom nav ---------- */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,20,33,0.92);backdrop-filter:blur(10px);border-top:1px solid var(--border);display:flex;justify-content:center;z-index:40;}
+  .bottom-nav-inner{max-width:480px;width:100%;display:flex;}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 0 calc(11px + env(safe-area-inset-bottom));color:var(--muted);cursor:pointer;font-size:10px;font-weight:600;}
+  .nav-item .nav-icon{font-size:19px;}
+  .nav-item.active{color:var(--sun);}
+
+  /* ---------- Power flow diagram ---------- */
+  .flow-card{background:radial-gradient(120% 100% at 50% -10%, #17233A 0%, #0F1826 60%);border:1px solid var(--border);border-radius:22px;padding:8px 8px 16px;margin-bottom:16px;overflow:hidden;transition:opacity .3s;}
+  .flow-card.waiting{animation:waitingPulse 1.8s ease-in-out infinite;}
+  @keyframes waitingPulse{0%,100%{opacity:1;}50%{opacity:.72;}}
+  .flow-svg{width:100%;height:auto;display:block;}
+  .flow-net-label{text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:-6px;}
+
+  .section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px 2px;}
+
+  .cascade{display:flex;flex-direction:column;gap:8px;}
+  .tier{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:var(--card);border:1px solid var(--border);}
+  .tier.on{border-color:rgba(53,208,184,0.4);background:linear-gradient(90deg, rgba(53,208,184,0.08), rgba(53,208,184,0.02));}
+  .tier-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;}
+  .tier.on .tier-icon{border-color:rgba(53,208,184,0.4);}
+  .tier-name{flex:1;}
+  .tier-name .tn{font-size:14px;font-weight:600;}
+  .tier-name .tp{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .tier-state{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;padding:5px 9px;border-radius:999px;color:var(--muted);background:var(--card2);}
+  .tier.on .tier-state{color:var(--battery);background:rgba(53,208,184,0.12);}
+
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;height:170px;}
+
+  /* ---------- Events ---------- */
+  .events-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:6px 12px;}
+  .event-item{display:flex;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);}
+  .event-item:last-child{border-bottom:none;}
+  .event-icon{width:32px;height:32px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
+  .event-icon.on{background:rgba(53,208,184,0.12);}
+  .event-icon.off{background:rgba(124,138,147,0.12);}
+  .event-icon.system{background:rgba(92,141,246,0.12);}
+  .event-msg{font-size:13px;font-weight:500;}
+  .event-time{font-size:11px;color:var(--muted);margin-top:2px;}
+
+  /* ---------- Settings ---------- */
+  .settings-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .settings-card h4{margin:0 0 4px;font-size:13px;}
+  .settings-card .hint{font-size:11px;color:var(--muted);margin-bottom:12px;}
+  .th-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .th-row label{flex:1;font-size:12px;color:var(--muted);}
+  .th-row input{width:90px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:13px;text-align:right;}
+  .danger-btn{width:100%;padding:11px;border-radius:10px;border:1px solid rgba(255,92,114,0.4);background:rgba(255,92,114,0.08);color:var(--neg);font-size:13px;font-weight:600;cursor:pointer;}
+
+  .plist-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--card2);border:1px solid var(--border);margin-bottom:8px;}
+  .plist-rank{width:24px;height:24px;border-radius:7px;background:var(--sun);color:#1a1206;font-family:var(--mono);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .plist-icon-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .plist-name{flex:1;min-width:0;}
+  .plist-name input{width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:600;padding:2px 0;outline:none;}
+  .plist-arrows{display:flex;flex-direction:column;gap:2px;}
+  .arrow-btn{width:24px;height:18px;border-radius:5px;background:var(--card);border:1px solid var(--border);color:var(--muted);font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .arrow-btn:hover{color:var(--sun);}
+  .arrow-btn:disabled{opacity:.25;cursor:default;}
+
+  .icon-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .icon-choice{width:38px;height:38px;border-radius:10px;background:var(--card2);border:1px solid var(--border);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .icon-choice.sel{border-color:var(--sun);background:rgba(253,183,80,0.12);}
+
+  .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13px;z-index:100;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+
+  /* ---------- Splash screen ---------- */
+  #screen-splash{align-items:center;text-align:center;position:relative;overflow:hidden;}
+  .splash-glow{position:absolute;top:50%;left:50%;width:340px;height:340px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(253,183,80,0.16), transparent 70%);animation:splashPulse 2.4s ease-in-out infinite;}
+  @keyframes splashPulse{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(0.94);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.04);}}
+  .splash-logo{width:88px;height:88px;border-radius:22px;position:relative;z-index:1;box-shadow:0 10px 30px rgba(253,183,80,0.25);animation:splashFloat 2.8s ease-in-out infinite;}
+  @keyframes splashFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  .splash-title{font-size:19px;font-weight:800;margin-top:18px;position:relative;z-index:1;}
+  .splash-title span{background:linear-gradient(90deg,var(--sun),var(--sun2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .splash-dots{display:flex;gap:6px;margin-top:22px;justify-content:center;position:relative;z-index:1;}
+  .splash-dots span{width:6px;height:6px;border-radius:50%;background:var(--sun);opacity:.3;animation:splashDot 1.2s ease-in-out infinite;}
+  .splash-dots span:nth-child(2){animation-delay:.15s;}
+  .splash-dots span:nth-child(3){animation-delay:.3s;}
+  @keyframes splashDot{0%,80%,100%{opacity:.3;transform:scale(1);}40%{opacity:1;transform:scale(1.3);}}
+
+  /* ---------- Screen transitions ---------- */
+  .center-wrap, .wrap{animation:screenFadeIn .35s ease both;}
+  @keyframes screenFadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- Tactile feedback ---------- */
+  .btn, .icon-btn, .device-card, .fab, .tier, .nav-item, .arrow-btn, .plist-icon-btn, .icon-choice, .auth-tab, .tab{
+    transition: transform .12s ease, filter .12s ease, border-color .15s ease, background .15s ease;
+  }
+  .btn:active, .fab:active{transform:scale(0.97);}
+  .device-card:active{transform:scale(0.985);}
+  .icon-btn:active, .arrow-btn:active, .plist-icon-btn:active, .icon-choice:active{transform:scale(0.9);}
+  .nav-item{position:relative;}
+  .nav-item.active .nav-icon{animation:navPop .3s ease;}
+  @keyframes navPop{0%{transform:scale(1);}40%{transform:scale(1.25);}100%{transform:scale(1);}}
+
+  /* ---------- Loading shimmer (for values before first data arrives) ---------- */
+  .shimmer{background:linear-gradient(90deg, var(--card2) 25%, var(--border2) 50%, var(--card2) 75%);background-size:200% 100%;animation:shimmer 1.6s ease-in-out infinite;border-radius:6px;color:transparent !important;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+  /* ---------- Modal entrance ---------- */
+  .modal{animation:modalSlideUp .25s cubic-bezier(.2,.8,.2,1) both;}
+  @keyframes modalSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  .modal-overlay{animation:overlayFade .2s ease both;}
+  @keyframes overlayFade{from{opacity:0;}to{opacity:1;}}
+
+  /* ---------- Empty state icon ---------- */
+  .empty-icon{width:64px;height:64px;margin:0 auto 14px;border-radius:18px;background:linear-gradient(160deg, var(--card2), var(--card));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;}
+</style>
+</head>
+<body>
+
+<!-- ============================= SPLASH SCREEN ============================= -->
+<div id="screen-splash" class="center-wrap">
+  <div class="splash-glow"></div>
+  <img src="icons/icon-192.png" alt="" class="splash-logo">
+  <div class="splash-title">Solar<span>Load</span>Manager</div>
+  <div class="splash-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- ============================= AUTH SCREEN ============================= -->
+<div id="screen-auth" class="center-wrap hidden">
+
+  <img src="icons/icon-192.png" alt="Solar Load Manager" style="width:76px;height:76px;border-radius:20px;display:block;margin:0 auto 14px;box-shadow:0 8px 24px rgba(253,183,80,0.2);">
+  <div class="auth-logo">Solar<span>Load</span>Manager</div>
+  <div class="auth-sub">Dynamic solar vs. home load management</div>
+
+  <div class="auth-tabs">
+    <div class="auth-tab active" id="tabLogin">Log In</div>
+    <div class="auth-tab" id="tabSignup">Sign Up</div>
+  </div>
+
+  <div id="authError" class="auth-error hidden"></div>
+
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="authPassword" placeholder="At least 6 characters" autocomplete="current-password">
+  </div>
+
+  <button class="btn btn-primary" id="authSubmitBtn">Log In</button>
+
+  <div class="divider">OR</div>
+  <button class="btn btn-google" id="googleBtn">
+    <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.6 3.5 24 3.5 12.7 3.5 3.5 12.7 3.5 24S12.7 44.5 24 44.5 44.5 35.3 44.5 24c0-1.2-.1-2.4-.3-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.6 18.9 12.5 24 12.5c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.6 3.5 24 3.5c-7.9 0-14.6 4.5-17.7 11.2z"/><path fill="#4CAF50" d="M24 44.5c5.5 0 10.4-1.9 14-5.1l-6.5-5.5c-2 1.4-4.6 2.2-7.5 2.2-5.3 0-9.7-3.1-11.3-7.6l-6.6 5C9.4 40 16.1 44.5 24 44.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.4-2.3 4.4-4.3 5.9l6.5 5.5C40.9 36.6 44.5 30.8 44.5 24c0-1.2-.1-2.4-.3-3.5z"/></svg>
+    Continue with Google
+  </button>
+</div>
+
+<!-- ============================= DEVICE LIST SCREEN ============================= -->
+<div id="screen-devices" class="wrap hidden">
+  <div class="topbar">
+    <div class="brand" style="display:flex;align-items:center;gap:9px;">
+      <img src="icons/icon-192.png" alt="" style="width:26px;height:26px;border-radius:8px;">
+      Solar<span>Load</span>Manager
+    </div>
+    <div class="icon-btn" id="logoutBtn" title="Log out">&#9211;</div>
+  </div>
+  <div class="section-title">Your Systems</div>
+  <div id="deviceListContainer"></div>
+  <button class="fab" id="openAddDeviceBtn">+ Add Device</button>
+</div>
+
+<!-- ============================= ADD DEVICE MODAL ============================= -->
+<div id="modalAddDevice" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>Pair a new device</h3>
+    <p>Power on your ESP32. The Device ID appears on its LCD screen and in the Serial Monitor at boot. Enter it below.</p>
+    <div id="addDeviceError" class="auth-error hidden"></div>
+    <div class="field">
+      <label>Device ID</label>
+      <input type="text" id="deviceIdInput" placeholder="e.g. A1B2C3D4E5F6" style="text-transform:uppercase;font-family:var(--mono);">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelAddDevice">Cancel</button>
+      <button class="btn btn-primary" id="confirmAddDevice">Pair Device</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= ICON PICKER MODAL ============================= -->
+<div id="modalIconPicker" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>Choose an icon</h3>
+    <p>Pick an icon for this load.</p>
+    <div class="icon-picker" id="iconPickerGrid"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelIconPicker">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= DEVICE DETAIL SCREEN ============================= -->
+<div id="screen-device" class="wrap hidden">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="icon-btn" id="backToListBtn">&#8592;</div>
+      <div>
+        <div class="device-title" id="deviceDetailName">Device</div>
+        <div class="device-sub" id="deviceDetailStatus">Connecting...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard tab -->
+  <div id="tab-dashboard">
+    <div class="flow-card">
+      <svg class="flow-svg" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+        <!-- connector lines -->
+        <line x1="150" y1="72" x2="150" y2="112" stroke="#1E293B" stroke-width="3"/>
+        <line x1="126" y1="176" x2="90" y2="208" stroke="#1E293B" stroke-width="3"/>
+        <line x1="174" y1="176" x2="210" y2="208" stroke="#1E293B" stroke-width="3"/>
+
+        <!-- animated flow dots: solar -> hub (always) -->
+        <circle r="3.5" fill="#FDB750">
+          <animateMotion dur="1.6s" repeatCount="indefinite" path="M150,72 L150,112"/>
+        </circle>
+        <!-- hub -> home (always) -->
+        <circle r="3.5" fill="#5C8DF6">
+          <animateMotion dur="1.6s" repeatCount="indefinite" path="M174,176 L210,208"/>
+        </circle>
+        <!-- hub -> battery (surplus/export direction) -->
+        <circle id="dotExport" r="3.5" fill="#35D0B8">
+          <animateMotion dur="1.6s" repeatCount="indefinite" path="M126,176 L90,208"/>
+        </circle>
+        <!-- battery -> hub (deficit/import direction) -->
+        <circle id="dotImport" r="3.5" fill="#FF5C72" class="hidden">
+          <animateMotion dur="1.6s" repeatCount="indefinite" path="M90,208 L126,176"/>
+        </circle>
+
+        <!-- Solar node -->
+        <circle cx="150" cy="42" r="30" fill="#121B2B" stroke="#FDB750" stroke-width="2"/>
+        <text x="150" y="38" text-anchor="middle" font-size="18" fill="#FDB750">&#9728;</text>
+        <text x="150" y="14" text-anchor="middle" font-size="9" fill="#7C8BA0" font-family="sans-serif">SOLAR</text>
+        <text id="svgSolarVal" x="150" y="52" text-anchor="middle" font-size="10" fill="#EDF2F7" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+
+        <!-- Hub -->
+        <circle cx="150" cy="150" r="44" fill="#0D1421" stroke="#263348" stroke-width="2"/>
+        <text x="150" y="144" text-anchor="middle" font-size="9" fill="#7C8BA0" font-family="sans-serif">NET</text>
+        <text id="svgNetVal" x="150" y="163" text-anchor="middle" font-size="17" fill="#EDF2F7" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+
+        <!-- Battery/Grid node -->
+        <circle cx="68" cy="235" r="28" fill="#121B2B" stroke="#35D0B8" stroke-width="2"/>
+        <text id="svgBattIcon" x="68" y="231" text-anchor="middle" font-size="16" fill="#35D0B8">&#128267;</text>
+        <text id="svgBattLabel" x="68" y="209" text-anchor="middle" font-size="8.5" fill="#7C8BA0" font-family="sans-serif">SURPLUS</text>
+
+        <!-- Home node -->
+        <circle cx="232" cy="235" r="28" fill="#121B2B" stroke="#5C8DF6" stroke-width="2"/>
+        <text x="232" y="231" text-anchor="middle" font-size="16" fill="#5C8DF6">&#127968;</text>
+        <text x="232" y="209" text-anchor="middle" font-size="8.5" fill="#7C8BA0" font-family="sans-serif">HOME</text>
+        <text id="svgLoadVal" x="232" y="252" text-anchor="middle" font-size="9.5" fill="#EDF2F7" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+      </svg>
+      <div class="flow-net-label" id="netSub">Waiting for data...</div>
+    </div>
+
+    <div class="section-title">Dynamic Priority Cascade</div>
+    <div class="cascade" id="cascadeList"></div>
+
+    <div class="section-title">Net Power History</div>
+    <div class="chart-card"><canvas id="netChart"></canvas></div>
+  </div>
+
+  <!-- Events tab -->
+  <div id="tab-events" class="hidden">
+    <div class="events-card">
+      <div id="eventsList"></div>
+      <div id="eventsEmpty" class="empty-state hidden"><div class="empty-icon">&#128337;</div><h3>No events yet</h3><p>Relay switches and system events will appear here as they happen.</p></div>
+    </div>
+  </div>
+
+  <!-- Settings tab -->
+  <div id="tab-settings" class="hidden">
+    <div class="settings-card">
+      <h4>Device name</h4>
+      <div class="hint">Shown on your device list.</div>
+      <div class="field" style="margin-bottom:0;">
+        <input type="text" id="renameInput" placeholder="e.g. Home - Main House">
+      </div>
+      <button class="btn btn-primary" style="margin-top:10px;" id="saveNameBtn">Save Name</button>
+    </div>
+
+    <div class="settings-card">
+      <h4>Load priority order</h4>
+      <div class="hint">Priority 1 turns on first (needs least solar surplus). Use the arrows to reorder, tap the icon to change it, and tap the name to rename.</div>
+      <div id="priorityList"></div>
+      <button class="btn btn-primary" style="margin-top:6px;" id="savePriorityBtn">Save Priority Order</button>
+    </div>
+
+    <div class="settings-card">
+      <h4>Priority thresholds (Watts)</h4>
+      <div class="hint">Controls when each priority level switches on/off, regardless of which load currently holds that rank. Synced to the device within ~10 seconds.</div>
+      <div class="th-row"><label>Priority 1 ON above</label><input type="number" id="th_p1_on"></div>
+      <div class="th-row"><label>Priority 2 ON above</label><input type="number" id="th_p2_on"></div>
+      <div class="th-row"><label>Priority 2 OFF below</label><input type="number" id="th_p2_off"></div>
+      <div class="th-row"><label>Priority 3 ON above</label><input type="number" id="th_p3_on"></div>
+      <div class="th-row"><label>Priority 3 OFF below</label><input type="number" id="th_p3_off"></div>
+      <div class="th-row"><label>Priority 4 ON above</label><input type="number" id="th_p4_on"></div>
+      <div class="th-row"><label>Priority 4 OFF below</label><input type="number" id="th_p4_off"></div>
+      <button class="btn btn-primary" style="margin-top:6px;" id="saveThresholdsBtn">Save Thresholds</button>
+    </div>
+
+    <div class="settings-card">
+      <h4>Device ID</h4>
+      <div class="hint" id="deviceIdDisplay" style="font-family:var(--mono);">--</div>
+    </div>
+
+    <button class="danger-btn" id="removeDeviceBtn">Remove Device From Account</button>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="nav-item active" data-tab="dashboard"><div class="nav-icon">&#9679;</div>Dashboard</div>
+      <div class="nav-item" data-tab="events"><div class="nav-icon">&#128337;</div>Events</div>
+      <div class="nav-item" data-tab="settings"><div class="nav-icon">&#9881;</div>Settings</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =======================================================================
+// FIREBASE INIT
+// =======================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyC_zVwrgjIFcAo7Rmg8SNxb1xIfKGq2PBw",
+  authDomain: "smart-load-management-f181d.firebaseapp.com",
+  databaseURL: "https://smart-load-management-f181d-default-rtdb.firebaseio.com",
+  projectId: "smart-load-management-f181d",
+  storageBucket: "smart-load-management-f181d.firebasestorage.app",
+  messagingSenderId: "213747882623",
+  appId: "1:213747882623:web:b6c5c735e1d23243b63d4a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// =======================================================================
+// CONSTANTS
+// =======================================================================
+const ICONS = ['\u26A1','\u2744\uFE0F','\uD83C\uDF00','\uD83D\uDCA1','\uD83D\uDCA7','\uD83D\uDCFA','\uD83E\uDDFA','\uD83D\uDD0C','\uD83D\uDD25','\uD83C\uDF2A\uFE0F'];
+const DEFAULT_LOAD_CONFIG = {
+  priority1:{relay:1,name:'Essential Load',icon:'\u26A1'},
+  priority2:{relay:2,name:'Priority Load 2',icon:'\uD83D\uDD0C'},
+  priority3:{relay:3,name:'Priority Load 3',icon:'\uD83D\uDD0C'},
+  priority4:{relay:4,name:'Non-Essential Load',icon:'\uD83D\uDD0C'}
+};
+
+// =======================================================================
+// STATE
+// =======================================================================
+let currentUser = null;
+let devices = {};
+let deviceListeners = {};
+let activeDeviceId = null;
+let activeTab = 'dashboard';
+let netChart = null;
+let authMode = 'login';
+let iconPickerTargetRank = null;
+let localPriorityOrder = null; // working copy while editing, [rankAtPos0..3] each = {relay,name,icon}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+function showScreen(id){
+  ['screen-splash','screen-auth','screen-devices','screen-device'].forEach(s=>{
+    const el = document.getElementById(s);
+    const shouldShow = s === id;
+    if (shouldShow && el.classList.contains('hidden')){
+      el.classList.remove('hidden');
+      el.style.animation = 'none';
+      void el.offsetWidth; // restart animation
+      el.style.animation = '';
+    } else if (!shouldShow){
+      el.classList.add('hidden');
+    }
+  });
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmt(n){ return (typeof n === 'number' && !isNaN(n)) ? Math.round(n) : '--'; }
+function isOnline(sys){
+  if (!sys || !sys.lastUpdate) return false;
+  return (Date.now()/1000 - sys.lastUpdate/1000) < 10;
+}
+
+// =======================================================================
+// AUTH
+// =======================================================================
+document.getElementById('tabLogin').onclick = () => setAuthMode('login');
+document.getElementById('tabSignup').onclick = () => setAuthMode('signup');
+function setAuthMode(mode){
+  authMode = mode;
+  document.getElementById('tabLogin').classList.toggle('active', mode==='login');
+  document.getElementById('tabSignup').classList.toggle('active', mode==='signup');
+  document.getElementById('authSubmitBtn').textContent = mode==='login' ? 'Log In' : 'Create Account';
+  document.getElementById('authError').classList.add('hidden');
+}
+function showAuthError(msg){
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+document.getElementById('authSubmitBtn').onclick = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass){ showAuthError('Enter an email and password.'); return; }
+  document.getElementById('authError').classList.add('hidden');
+  const btn = document.getElementById('authSubmitBtn');
+  btn.classList.add('loading');
+  try{
+    if (authMode === 'login') await auth.signInWithEmailAndPassword(email, pass);
+    else await auth.createUserWithEmailAndPassword(email, pass);
+  }catch(e){
+    showAuthError(e.message.replace('Firebase: ','').replace(/\(auth\/.*\)\.?/,'').trim());
+  } finally {
+    btn.classList.remove('loading');
+  }
+};
+document.getElementById('googleBtn').onclick = async () => {
+  try{
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+  }catch(e){ showAuthError(e.message.replace('Firebase: ','').trim()); }
+};
+document.getElementById('logoutBtn').onclick = () => auth.signOut();
+const appStartTime = Date.now();
+const MIN_SPLASH_MS = 700;
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  detachAllDeviceListeners();
+  devices = {};
+  const elapsed = Date.now() - appStartTime;
+  const wait = Math.max(0, MIN_SPLASH_MS - elapsed);
+  setTimeout(() => {
+    if (user){ showScreen('screen-devices'); listenToUserDevices(); }
+    else showScreen('screen-auth');
+  }, wait);
+});
+
+// =======================================================================
+// DEVICE LIST
+// =======================================================================
+let userDevicesRef = null;
+function listenToUserDevices(){
+  userDevicesRef = db.ref('/users/' + currentUser.uid + '/devices');
+  userDevicesRef.on('value', snap => {
+    const ids = snap.exists() ? Object.keys(snap.val()) : [];
+    Object.keys(deviceListeners).forEach(id => { if (!ids.includes(id)) detachDeviceListener(id); });
+    ids.forEach(id => attachDeviceListener(id));
+    renderDeviceList();
+  });
+}
+function attachDeviceListener(deviceId){
+  if (deviceListeners[deviceId]) return;
+  const ref = db.ref('/devices/' + deviceId);
+  const cb = ref.on('value', snap => {
+    devices[deviceId] = snap.val() || {};
+    renderDeviceList();
+    if (activeDeviceId === deviceId) renderDeviceDetail();
+  });
+  deviceListeners[deviceId] = { ref, cb };
+}
+function detachDeviceListener(deviceId){
+  if (deviceListeners[deviceId]){ deviceListeners[deviceId].ref.off('value', deviceListeners[deviceId].cb); delete deviceListeners[deviceId]; }
+  delete devices[deviceId];
+}
+function detachAllDeviceListeners(){
+  Object.keys(deviceListeners).forEach(detachDeviceListener);
+  if (userDevicesRef) userDevicesRef.off();
+}
+function renderDeviceList(){
+  const container = document.getElementById('deviceListContainer');
+  const ids = Object.keys(devices);
+  if (ids.length === 0){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#9728;&#65039;</div><h3>No systems yet</h3><p>Tap "+ Add Device" below and enter the Device ID shown on your ESP32's LCD screen at boot.</p></div>`;
+    return;
+  }
+  container.innerHTML = ids.map(id => {
+    const d = devices[id] || {};
+    const sys = d.system || {};
+    const online = isOnline(sys);
+    const net = typeof sys.netW === 'number' ? Math.round(sys.netW) : null;
+    const netColor = net === null ? 'var(--text)' : (net >= 0 ? 'var(--pos)' : 'var(--neg)');
+    return `<div class="device-card" data-id="${id}">
+        <div class="device-card-top">
+          <div><div class="device-name">${escapeHtml(d.name || 'Unnamed System')}</div><div class="device-id">${id}</div></div>
+          <div class="device-net ${net===null?'shimmer':''}" style="color:${netColor}">${net===null?'---- ':(net>0?'+':'')+net} W</div>
+        </div>
+        <div class="device-status"><div class="dot ${online?'live':'offline'}"></div>${online ? 'Online' : 'Offline'}</div>
+      </div>`;
+  }).join('');
+  container.querySelectorAll('.device-card').forEach(el => { el.onclick = () => openDevice(el.getAttribute('data-id')); });
+}
+
+// =======================================================================
+// ADD / PAIR DEVICE
+// =======================================================================
+document.getElementById('openAddDeviceBtn').onclick = () => {
+  document.getElementById('deviceIdInput').value = '';
+  document.getElementById('addDeviceError').classList.add('hidden');
+  document.getElementById('modalAddDevice').classList.remove('hidden');
+};
+document.getElementById('cancelAddDevice').onclick = () => document.getElementById('modalAddDevice').classList.add('hidden');
+document.getElementById('confirmAddDevice').onclick = async () => {
+  const id = document.getElementById('deviceIdInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('addDeviceError');
+  errEl.classList.add('hidden');
+  if (!id){ errEl.textContent='Enter a Device ID.'; errEl.classList.remove('hidden'); return; }
+  const btn = document.getElementById('confirmAddDevice');
+  btn.classList.add('loading');
+  try{
+    const snap = await db.ref('/devices/' + id).once('value');
+    if (!snap.exists() || !snap.child('system').exists()){
+      errEl.textContent = 'Device ID not found. Make sure the device is powered on, connected to WiFi, and has synced at least once.';
+      errEl.classList.remove('hidden'); return;
+    }
+    const ownerSnap = snap.child('owner');
+    if (ownerSnap.exists() && ownerSnap.val() !== currentUser.uid){
+      errEl.textContent = 'This device is already paired to another account.';
+      errEl.classList.remove('hidden'); return;
+    }
+    const updates = {};
+    updates['/devices/' + id + '/owner'] = currentUser.uid;
+    if (!snap.child('name').exists()) updates['/devices/' + id + '/name'] = 'My Solar Home';
+    updates['/users/' + currentUser.uid + '/devices/' + id] = true;
+    await db.ref().update(updates);
+    document.getElementById('modalAddDevice').classList.add('hidden');
+    showToast('Device paired successfully');
+  }catch(e){ errEl.textContent = e.message; errEl.classList.remove('hidden'); }
+  finally { btn.classList.remove('loading'); }
+};
+
+// =======================================================================
+// DEVICE DETAIL
+// =======================================================================
+document.getElementById('backToListBtn').onclick = () => { activeDeviceId = null; showScreen('screen-devices'); };
+
+document.querySelectorAll('.nav-item').forEach(navEl => {
+  navEl.onclick = () => {
+    activeTab = navEl.getAttribute('data-tab');
+    document.querySelectorAll('.nav-item').forEach(t=>t.classList.toggle('active', t===navEl));
+    ['dashboard','events','settings'].forEach(t=>{ document.getElementById('tab-'+t).classList.toggle('hidden', t !== activeTab); });
+    if (activeTab === 'events') loadEvents();
+    if (activeTab === 'settings') initPriorityEditor();
+  };
+});
+
+function openDevice(id){
+  activeDeviceId = id;
+  activeTab = 'dashboard';
+  localPriorityOrder = null;
+  document.querySelectorAll('.nav-item').forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')==='dashboard'));
+  ['dashboard','events','settings'].forEach(t=>{ document.getElementById('tab-'+t).classList.toggle('hidden', t !== 'dashboard'); });
+  showScreen('screen-device');
+  initChart();
+  renderDeviceDetail();
+  loadHistory();
+}
+
+function getLoadConfig(d){
+  const lc = d.loadConfig || {};
+  const out = {};
+  [1,2,3,4].forEach(r=>{
+    out['priority'+r] = lc['priority'+r] || DEFAULT_LOAD_CONFIG['priority'+r];
+  });
+  return out;
+}
+
+function renderDeviceDetail(){
+  if (!activeDeviceId) return;
+  const d = devices[activeDeviceId] || {};
+  const sys = d.system || {};
+  const relays = d.relays || {};
+  const thresholds = d.thresholds || {};
+  const lc = getLoadConfig(d);
+  const online = isOnline(sys);
+
+  document.getElementById('deviceDetailName').textContent = d.name || 'Unnamed System';
+  document.getElementById('deviceDetailStatus').textContent = online ? 'Online - Live' : 'Offline';
+  document.getElementById('deviceIdDisplay').textContent = activeDeviceId;
+
+  const solarW = sys.solarW, loadW = sys.loadW;
+  const net = typeof sys.netW === 'number' ? sys.netW : null;
+
+  document.getElementById('svgSolarVal').textContent = fmt(solarW) + ' W';
+  document.getElementById('svgLoadVal').textContent = fmt(loadW) + ' W';
+  document.getElementById('svgNetVal').textContent = net===null?'--':(net>0?'+':'')+Math.round(net)+' W';
+  document.getElementById('svgNetVal').setAttribute('fill', net===null?'#EDF2F7':(net>=0?'#35D0B8':'#FF5C72'));
+  document.querySelector('.flow-card').classList.toggle('waiting', net === null);
+  document.getElementById('netSub').textContent = net===null ? 'Waiting for data...' :
+    (net>=0 ? 'Surplus - solar is covering the load' : 'Deficit - drawing extra from battery/grid');
+
+  const exportDot = document.getElementById('dotExport');
+  const importDot = document.getElementById('dotImport');
+  const battIcon = document.getElementById('svgBattIcon');
+  const battLabel = document.getElementById('svgBattLabel');
+  if (net !== null && net < 0){
+    exportDot.classList.add('hidden'); importDot.classList.remove('hidden');
+    battIcon.textContent = '\u26A1'; battLabel.textContent = 'GRID DRAW';
+  } else {
+    exportDot.classList.remove('hidden'); importDot.classList.add('hidden');
+    battIcon.textContent = '\uD83D\uDD0B'; battLabel.textContent = 'SURPLUS';
+  }
+
+  // Priority cascade, using loadConfig mapping (rank -> relay -> state)
+  const cascadeEl = document.getElementById('cascadeList');
+  cascadeEl.innerHTML = [1,2,3,4].map(rank=>{
+    const cfg = lc['priority'+rank];
+    const on = !!relays['relay'+cfg.relay];
+    return `<div class="tier ${on?'on':''}">
+      <div class="tier-icon">${cfg.icon}</div>
+      <div class="tier-name"><div class="tn">${escapeHtml(cfg.name)}</div><div class="tp">Priority ${rank}</div></div>
+      <div class="tier-state">${on?'ON':'OFF'}</div>
+    </div>`;
+  }).join('');
+
+  // Settings: name field
+  if (!document.getElementById('renameInput').dataset.dirty){
+    document.getElementById('renameInput').value = d.name || '';
+  }
+  // Settings: thresholds (priority-keyed now)
+  const thMap = { th_p1_on:'priority1_on', th_p2_on:'priority2_on', th_p2_off:'priority2_off',
+    th_p3_on:'priority3_on', th_p3_off:'priority3_off', th_p4_on:'priority4_on', th_p4_off:'priority4_off' };
+  Object.keys(thMap).forEach(elId=>{
+    const el = document.getElementById(elId);
+    if (!el.dataset.dirty && thresholds[thMap[elId]] !== undefined) el.value = thresholds[thMap[elId]];
+  });
+}
+
+document.querySelectorAll('#tab-settings input[type=number], #renameInput').forEach(el=>{
+  el.addEventListener('input', ()=> el.dataset.dirty = '1');
+});
+
+document.getElementById('saveNameBtn').onclick = async () => {
+  const val = document.getElementById('renameInput').value.trim();
+  if (!val || !activeDeviceId) return;
+  await db.ref('/devices/'+activeDeviceId+'/name').set(val);
+  document.getElementById('renameInput').dataset.dirty = '';
+  showToast('Name saved');
+};
+
+document.getElementById('saveThresholdsBtn').onclick = async () => {
+  if (!activeDeviceId) return;
+  const thMap = { th_p1_on:'priority1_on', th_p2_on:'priority2_on', th_p2_off:'priority2_off',
+    th_p3_on:'priority3_on', th_p3_off:'priority3_off', th_p4_on:'priority4_on', th_p4_off:'priority4_off' };
+  const updates = {};
+  Object.keys(thMap).forEach(elId=>{
+    const v = parseFloat(document.getElementById(elId).value);
+    if (!isNaN(v)) updates['/devices/'+activeDeviceId+'/thresholds/'+thMap[elId]] = v;
+  });
+  await db.ref().update(updates);
+  document.querySelectorAll('#tab-settings input[type=number]').forEach(el=> el.dataset.dirty = '');
+  showToast('Thresholds saved - device will sync within ~10s');
+};
+
+document.getElementById('removeDeviceBtn').onclick = async () => {
+  if (!activeDeviceId) return;
+  if (!confirm('Remove this device from your account? The device itself and its history are not deleted, and you can re-pair it anytime with its Device ID.')) return;
+  await db.ref('/users/'+currentUser.uid+'/devices/'+activeDeviceId).remove();
+  activeDeviceId = null;
+  showScreen('screen-devices');
+  showToast('Device removed from your account');
+};
+
+// =======================================================================
+// PRIORITY ORDER EDITOR (Settings tab)
+// =======================================================================
+function initPriorityEditor(){
+  if (!activeDeviceId) return;
+  const d = devices[activeDeviceId] || {};
+  if (!localPriorityOrder){
+    const lc = getLoadConfig(d);
+    localPriorityOrder = [1,2,3,4].map(r => Object.assign({}, lc['priority'+r]));
+  }
+  renderPriorityList();
+}
+
+function renderPriorityList(){
+  const el = document.getElementById('priorityList');
+  el.innerHTML = localPriorityOrder.map((item, idx) => `
+    <div class="plist-row">
+      <div class="plist-rank">P${idx+1}</div>
+      <div class="plist-icon-btn" data-idx="${idx}" data-action="icon">${item.icon}</div>
+      <div class="plist-name"><input type="text" data-idx="${idx}" data-action="name" value="${escapeHtml(item.name)}"></div>
+      <div class="plist-arrows">
+        <div class="arrow-btn" data-idx="${idx}" data-action="up" ${idx===0?'disabled':''}>&#9650;</div>
+        <div class="arrow-btn" data-idx="${idx}" data-action="down" ${idx===localPriorityOrder.length-1?'disabled':''}>&#9660;</div>
+      </div>
+    </div>`).join('');
+
+  el.querySelectorAll('[data-action="up"]').forEach(b=>b.onclick = () => movePriority(parseInt(b.dataset.idx), -1));
+  el.querySelectorAll('[data-action="down"]').forEach(b=>b.onclick = () => movePriority(parseInt(b.dataset.idx), 1));
+  el.querySelectorAll('[data-action="icon"]').forEach(b=>b.onclick = () => openIconPicker(parseInt(b.dataset.idx)));
+  el.querySelectorAll('[data-action="name"]').forEach(inp=>inp.oninput = () => {
+    localPriorityOrder[parseInt(inp.dataset.idx)].name = inp.value;
+  });
+}
+
+function movePriority(idx, dir){
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= localPriorityOrder.length) return;
+  const tmp = localPriorityOrder[idx];
+  localPriorityOrder[idx] = localPriorityOrder[newIdx];
+  localPriorityOrder[newIdx] = tmp;
+  renderPriorityList();
+}
+
+function openIconPicker(idx){
+  iconPickerTargetRank = idx;
+  const grid = document.getElementById('iconPickerGrid');
+  grid.innerHTML = ICONS.map(ic => `<div class="icon-choice ${localPriorityOrder[idx].icon===ic?'sel':''}" data-icon="${ic}">${ic}</div>`).join('');
+  grid.querySelectorAll('.icon-choice').forEach(c => c.onclick = () => {
+    localPriorityOrder[idx].icon = c.getAttribute('data-icon');
+    document.getElementById('modalIconPicker').classList.add('hidden');
+    renderPriorityList();
+  });
+  document.getElementById('modalIconPicker').classList.remove('hidden');
+}
+document.getElementById('cancelIconPicker').onclick = () => document.getElementById('modalIconPicker').classList.add('hidden');
+
+document.getElementById('savePriorityBtn').onclick = async () => {
+  if (!activeDeviceId || !localPriorityOrder) return;
+  const updates = {};
+  localPriorityOrder.forEach((item, idx) => {
+    const rank = idx + 1;
+    updates['/devices/'+activeDeviceId+'/loadConfig/priority'+rank+'/relay'] = item.relay;
+    updates['/devices/'+activeDeviceId+'/loadConfig/priority'+rank+'/name'] = item.name;
+    updates['/devices/'+activeDeviceId+'/loadConfig/priority'+rank+'/icon'] = item.icon;
+  });
+  await db.ref().update(updates);
+  showToast('Priority order saved - device will sync within ~10s');
+};
+
+// =======================================================================
+// EVENTS
+// =======================================================================
+function loadEvents(){
+  if (!activeDeviceId) return;
+  const listEl = document.getElementById('eventsList');
+  const emptyEl = document.getElementById('eventsEmpty');
+  db.ref('/devices/'+activeDeviceId+'/events').orderByChild('ts').limitToLast(50).once('value', snap => {
+    if (!snap.exists()){ listEl.innerHTML = ''; emptyEl.classList.remove('hidden'); return; }
+    emptyEl.classList.add('hidden');
+    const items = [];
+    snap.forEach(child => items.push(child.val()));
+    items.reverse();
+    listEl.innerHTML = items.map(ev => {
+      const iconClass = ev.type === 'relay_on' ? 'on' : (ev.type === 'relay_off' ? 'off' : 'system');
+      const icon = ev.type === 'relay_on' ? '&#9679;' : (ev.type === 'relay_off' ? '&#9675;' : '&#9881;');
+      const time = ev.ts ? new Date(ev.ts).toLocaleString() : '';
+      return `<div class="event-item"><div class="event-icon ${iconClass}">${icon}</div>
+        <div><div class="event-msg">${escapeHtml(ev.message||'')}</div><div class="event-time">${time}</div></div></div>`;
+    }).join('');
+  });
+}
+
+// =======================================================================
+// CHART / HISTORY
+// =======================================================================
+function initChart(){
+  const ctx = document.getElementById('netChart').getContext('2d');
+  if (netChart) netChart.destroy();
+  netChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:[], datasets:[{ data:[], borderColor:'#35D0B8', backgroundColor:'rgba(53,208,184,0.08)', fill:true, tension:.35, pointRadius:0, borderWidth:2 }]},
+    options:{ responsive:true, maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}},
+      scales:{ x:{display:false}, y:{ grid:{color:'#1B2429'}, ticks:{color:'#7C8BA0', font:{size:10}} } } }
+  });
+}
+function loadHistory(){
+  if (!activeDeviceId) return;
+  db.ref('/devices/'+activeDeviceId+'/history').orderByChild('ts').limitToLast(60).once('value', snap => {
+    if (!snap.exists() || !netChart) return;
+    const points = [];
+    snap.forEach(child => points.push(child.val().netW));
+    netChart.data.labels = points.map(()=> '');
+    netChart.data.datasets[0].data = points;
+    netChart.update('none');
+  });
+}
+
+document.getElementById('authPassword').addEventListener('keydown', e=>{ if (e.key === 'Enter') document.getElementById('authSubmitBtn').click(); });
+
+// Register service worker so the browser treats this as a fully installable
+// PWA (custom icon + true full-screen standalone mode on Android too)
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
