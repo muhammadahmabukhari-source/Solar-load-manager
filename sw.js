@@ -7,7 +7,7 @@
 // this does NOT cache or work offline for live readings, only the app's
 // own HTML/CSS/JS shell.
 
-const CACHE_NAME = 'solar-load-manager-v2';
+const CACHE_NAME = 'solar-load-manager-v5';
 const APP_SHELL = [
   './index.html',
   './manifest.json'

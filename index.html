@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="theme-color" content="#0A0F1A">
+<meta name="theme-color" content="#F4F6F9">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SolarLoad">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Solar Load Manager</title>
 
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-auth-compat.min.js"></script>
@@ -22,11 +22,12 @@
 
 <style>
   :root{
-    --bg:#0A0F1A; --bg2:#0F1A2E; --card:#121B2B; --card2:#0D1421;
-    --border:#1E293B; --border2:#263348;
-    --text:#EDF2F7; --muted:#7C8BA0; --muted2:#4B5A70;
-    --sun:#FDB750; --sun2:#FF7A45; --battery:#35D0B8; --grid:#5C8DF6;
-    --pos:#35D0B8; --neg:#FF5C72;
+    --bg:#F4F6F9; --bg2:#FFFFFF; --card:#FFFFFF; --card2:#F0F3F7;
+    --border:#E2E8F0; --border2:#CBD5E1;
+    --text:#0F172A; --muted:#64748B; --muted2:#94A3B8;
+    --sun:#E8912A; --sun2:#D9631F; --battery:#0D9488; --grid:#2563EB;
+    --pos:#0D9488; --neg:#DC2626;
+    --shadow: 0 1px 2px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06);
     --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
@@ -50,17 +51,17 @@
   .field input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;}
   .field input:focus{border-color:var(--sun);}
   .btn{width:100%;padding:13px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
-  .btn-primary{background:linear-gradient(90deg,var(--sun),var(--sun2));color:#1a1206;}
+  .btn-primary{background:linear-gradient(90deg,var(--sun),var(--sun2));color:#FFFFFF;}
   .btn-primary:hover{filter:brightness(1.06);}
   .btn.loading{color:transparent !important;position:relative;pointer-events:none;}
   .btn.loading::after{content:'';position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;
-    border:2px solid rgba(26,18,6,0.3);border-top-color:#1a1206;border-radius:50%;animation:btnSpin .6s linear infinite;}
+    border:2px solid rgba(26,18,6,0.3);border-top-color:#FFFFFF;border-radius:50%;animation:btnSpin .6s linear infinite;}
   @keyframes btnSpin{to{transform:rotate(360deg);}}
   .btn-google{background:var(--card2);color:var(--text);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;}
   .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
   .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--muted2);font-size:11px;}
   .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-  .auth-error{background:rgba(255,92,114,0.1);border:1px solid rgba(255,92,114,0.3);color:var(--neg);font-size:12px;padding:10px 12px;border-radius:8px;margin-bottom:14px;}
+  .auth-error{background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--neg);font-size:12px;padding:10px 12px;border-radius:8px;margin-bottom:14px;}
 
   /* ---------- Top bar ---------- */
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:10px;}
@@ -86,7 +87,7 @@
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
   .empty-state h3{color:var(--text);font-size:16px;margin-bottom:6px;}
   .empty-state p{font-size:13px;line-height:1.5;}
-  .fab{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);max-width:448px;width:calc(100% - 32px);background:linear-gradient(90deg,var(--sun),var(--sun2));color:#1a1206;border:none;border-radius:14px;padding:15px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(253,183,80,0.25);}
+  .fab{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);max-width:448px;width:calc(100% - 32px);background:linear-gradient(90deg,var(--sun),var(--sun2));color:#FFFFFF;border:none;border-radius:14px;padding:15px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(232,145,42,0.25);}
 
   /* ---------- Modal ---------- */
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;z-index:60;}
@@ -104,35 +105,56 @@
   .nav-item.active{color:var(--sun);}
 
   /* ---------- Power flow diagram ---------- */
-  .flow-card{background:radial-gradient(120% 100% at 50% -10%, #17233A 0%, #0F1826 60%);border:1px solid var(--border);border-radius:22px;padding:8px 8px 16px;margin-bottom:16px;overflow:hidden;transition:opacity .3s;}
+  .flow-card{background:radial-gradient(120% 100% at 50% -10%, #EEF2F7 0%, #FAFBFC 60%);border:1px solid var(--border);border-radius:22px;padding:8px 8px 16px;margin-bottom:16px;overflow:hidden;transition:opacity .3s;}
   .flow-card.waiting{animation:waitingPulse 1.8s ease-in-out infinite;}
   @keyframes waitingPulse{0%,100%{opacity:1;}50%{opacity:.72;}}
   .flow-svg{width:100%;height:auto;display:block;}
   .flow-net-label{text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:-6px;}
+  .temp-badge{display:flex;align-items:center;justify-content:center;gap:6px;margin:12px auto 0;width:fit-content;background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);}
+  .temp-badge.warm{color:#D97706;border-color:#FDE1B8;background:#FFF7ED;}
+  .temp-badge.hot{color:var(--neg);border-color:#FCA5A5;background:#FEF2F2;}
 
   .section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px 2px;}
 
   .cascade{display:flex;flex-direction:column;gap:8px;}
   .tier{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:var(--card);border:1px solid var(--border);}
-  .tier.on{border-color:rgba(53,208,184,0.4);background:linear-gradient(90deg, rgba(53,208,184,0.08), rgba(53,208,184,0.02));}
+  .tier.on{border-color:rgba(13,148,136,0.4);background:linear-gradient(90deg, rgba(13,148,136,0.08), rgba(13,148,136,0.02));}
   .tier-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;}
-  .tier.on .tier-icon{border-color:rgba(53,208,184,0.4);}
+  .tier.on .tier-icon{border-color:rgba(13,148,136,0.4);}
   .tier-name{flex:1;}
   .tier-name .tn{font-size:14px;font-weight:600;}
   .tier-name .tp{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
   .tier-state{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;padding:5px 9px;border-radius:999px;color:var(--muted);background:var(--card2);}
-  .tier.on .tier-state{color:var(--battery);background:rgba(53,208,184,0.12);}
+  .tier.on .tier-state{color:var(--battery);background:rgba(13,148,136,0.12);}
 
   .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;height:170px;}
+
+  /* ---------- Energy tab ---------- */
+  .energy-disclaimer{background:#FFF7ED;border:1px solid #FDE1B8;color:#92400E;font-size:12px;line-height:1.5;padding:12px 14px;border-radius:12px;margin-bottom:16px;}
+  .energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .energy-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+  .energy-card.export{border-top:3px solid var(--pos);}
+  .energy-card.import{border-top:3px solid var(--grid);}
+  .energy-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+  .energy-value{font-family:var(--mono);font-size:24px;font-weight:700;}
+  .energy-card.export .energy-value{color:var(--pos);}
+  .energy-card.import .energy-value{color:var(--grid);}
+  .energy-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+  .energy-card-sm{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+  .energy-card-sm.export{border-left:3px solid var(--pos);}
+  .energy-card-sm.import{border-left:3px solid var(--grid);}
+  .energy-value-sm{font-family:var(--mono);font-size:16px;font-weight:700;margin-top:4px;}
+  .energy-card-sm.export .energy-value-sm{color:var(--pos);}
+  .energy-card-sm.import .energy-value-sm{color:var(--grid);}
 
   /* ---------- Events ---------- */
   .events-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:6px 12px;}
   .event-item{display:flex;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);}
   .event-item:last-child{border-bottom:none;}
   .event-icon{width:32px;height:32px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
-  .event-icon.on{background:rgba(53,208,184,0.12);}
+  .event-icon.on{background:rgba(13,148,136,0.12);}
   .event-icon.off{background:rgba(124,138,147,0.12);}
-  .event-icon.system{background:rgba(92,141,246,0.12);}
+  .event-icon.system{background:rgba(37,99,235,0.12);}
   .event-msg{font-size:13px;font-weight:500;}
   .event-time{font-size:11px;color:var(--muted);margin-top:2px;}
 
@@ -143,10 +165,10 @@
   .th-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
   .th-row label{flex:1;font-size:12px;color:var(--muted);}
   .th-row input{width:90px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:13px;text-align:right;}
-  .danger-btn{width:100%;padding:11px;border-radius:10px;border:1px solid rgba(255,92,114,0.4);background:rgba(255,92,114,0.08);color:var(--neg);font-size:13px;font-weight:600;cursor:pointer;}
+  .danger-btn{width:100%;padding:11px;border-radius:10px;border:1px solid rgba(220,38,38,0.4);background:rgba(220,38,38,0.08);color:var(--neg);font-size:13px;font-weight:600;cursor:pointer;}
 
   .plist-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--card2);border:1px solid var(--border);margin-bottom:8px;}
-  .plist-rank{width:24px;height:24px;border-radius:7px;background:var(--sun);color:#1a1206;font-family:var(--mono);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .plist-rank{width:24px;height:24px;border-radius:7px;background:var(--sun);color:#FFFFFF;font-family:var(--mono);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .plist-icon-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .plist-name{flex:1;min-width:0;}
   .plist-name input{width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:600;padding:2px 0;outline:none;}
@@ -157,16 +179,16 @@
 
   .icon-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
   .icon-choice{width:38px;height:38px;border-radius:10px;background:var(--card2);border:1px solid var(--border);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .icon-choice.sel{border-color:var(--sun);background:rgba(253,183,80,0.12);}
+  .icon-choice.sel{border-color:var(--sun);background:rgba(232,145,42,0.12);}
 
   .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13px;z-index:100;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
 
   /* ---------- Splash screen ---------- */
   #screen-splash{align-items:center;text-align:center;position:relative;overflow:hidden;}
   .splash-glow{position:absolute;top:50%;left:50%;width:340px;height:340px;transform:translate(-50%,-50%);
-    background:radial-gradient(circle, rgba(253,183,80,0.16), transparent 70%);animation:splashPulse 2.4s ease-in-out infinite;}
+    background:radial-gradient(circle, rgba(232,145,42,0.16), transparent 70%);animation:splashPulse 2.4s ease-in-out infinite;}
   @keyframes splashPulse{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(0.94);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.04);}}
-  .splash-logo{width:88px;height:88px;border-radius:22px;position:relative;z-index:1;box-shadow:0 10px 30px rgba(253,183,80,0.25);animation:splashFloat 2.8s ease-in-out infinite;}
+  .splash-logo{width:88px;height:88px;border-radius:22px;position:relative;z-index:1;box-shadow:0 10px 30px rgba(232,145,42,0.25);animation:splashFloat 2.8s ease-in-out infinite;}
   @keyframes splashFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
   .splash-title{font-size:19px;font-weight:800;margin-top:18px;position:relative;z-index:1;}
   .splash-title span{background:linear-gradient(90deg,var(--sun),var(--sun2));-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -210,7 +232,33 @@
 <!-- ============================= SPLASH SCREEN ============================= -->
 <div id="screen-splash" class="center-wrap">
   <div class="splash-glow"></div>
-  <img src="icons/icon-192.png" alt="" class="splash-logo">
+  <svg class="splash-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <defs>
+        <linearGradient id="bgGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0F1A2E"/><stop offset="100%" stop-color="#0A0F1A"/>
+        </linearGradient>
+        <linearGradient id="sunGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#E8912A"/><stop offset="100%" stop-color="#D9631F"/>
+        </linearGradient>
+        <radialGradient id="glowLogo" cx="50%" cy="38%" r="55%">
+          <stop offset="0%" stop-color="#E8912A" stop-opacity="0.35"/><stop offset="100%" stop-color="#E8912A" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo)"/>
+      <rect width="512" height="512" rx="112" fill="url(#glowLogo)"/>
+      <g stroke="url(#sunGradLogo)" stroke-width="14" stroke-linecap="round">
+        <line x1="256" y1="96" x2="256" y2="132"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(45 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-45 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(90 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-90 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(135 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-135 256 200)"/>
+      </g>
+      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo)"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo)" fill-opacity="0.14"/>
+    </svg>
   <div class="splash-title">Solar<span>Load</span>Manager</div>
   <div class="splash-dots"><span></span><span></span><span></span></div>
 </div>
@@ -218,7 +266,33 @@
 <!-- ============================= AUTH SCREEN ============================= -->
 <div id="screen-auth" class="center-wrap hidden">
 
-  <img src="icons/icon-192.png" alt="Solar Load Manager" style="width:76px;height:76px;border-radius:20px;display:block;margin:0 auto 14px;box-shadow:0 8px 24px rgba(253,183,80,0.2);">
+  <svg width="76" height="76" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 14px;box-shadow:0 8px 24px rgba(232,145,42,0.2);border-radius:20px;display:block;">
+      <defs>
+        <linearGradient id="bgGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0F1A2E"/><stop offset="100%" stop-color="#0A0F1A"/>
+        </linearGradient>
+        <linearGradient id="sunGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#E8912A"/><stop offset="100%" stop-color="#D9631F"/>
+        </linearGradient>
+        <radialGradient id="glowLogo" cx="50%" cy="38%" r="55%">
+          <stop offset="0%" stop-color="#E8912A" stop-opacity="0.35"/><stop offset="100%" stop-color="#E8912A" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo)"/>
+      <rect width="512" height="512" rx="112" fill="url(#glowLogo)"/>
+      <g stroke="url(#sunGradLogo)" stroke-width="14" stroke-linecap="round">
+        <line x1="256" y1="96" x2="256" y2="132"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(45 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-45 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(90 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-90 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(135 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-135 256 200)"/>
+      </g>
+      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo)"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo)" fill-opacity="0.14"/>
+    </svg>
   <div class="auth-logo">Solar<span>Load</span>Manager</div>
   <div class="auth-sub">Dynamic solar vs. home load management</div>
 
@@ -251,7 +325,33 @@
 <div id="screen-devices" class="wrap hidden">
   <div class="topbar">
     <div class="brand" style="display:flex;align-items:center;gap:9px;">
-      <img src="icons/icon-192.png" alt="" style="width:26px;height:26px;border-radius:8px;">
+      <svg width="26" height="26" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px;display:block;">
+      <defs>
+        <linearGradient id="bgGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0F1A2E"/><stop offset="100%" stop-color="#0A0F1A"/>
+        </linearGradient>
+        <linearGradient id="sunGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#E8912A"/><stop offset="100%" stop-color="#D9631F"/>
+        </linearGradient>
+        <radialGradient id="glowLogo" cx="50%" cy="38%" r="55%">
+          <stop offset="0%" stop-color="#E8912A" stop-opacity="0.35"/><stop offset="100%" stop-color="#E8912A" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo)"/>
+      <rect width="512" height="512" rx="112" fill="url(#glowLogo)"/>
+      <g stroke="url(#sunGradLogo)" stroke-width="14" stroke-linecap="round">
+        <line x1="256" y1="96" x2="256" y2="132"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(45 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-45 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(90 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-90 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(135 256 200)"/>
+        <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-135 256 200)"/>
+      </g>
+      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo)"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo)" fill-opacity="0.14"/>
+    </svg>
       Solar<span>Load</span>Manager
     </div>
     <div class="icon-btn" id="logoutBtn" title="Log out">&#9211;</div>
@@ -307,50 +407,51 @@
     <div class="flow-card">
       <svg class="flow-svg" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
         <!-- connector lines -->
-        <line x1="150" y1="72" x2="150" y2="112" stroke="#1E293B" stroke-width="3"/>
-        <line x1="126" y1="176" x2="90" y2="208" stroke="#1E293B" stroke-width="3"/>
-        <line x1="174" y1="176" x2="210" y2="208" stroke="#1E293B" stroke-width="3"/>
+        <line x1="150" y1="72" x2="150" y2="112" stroke="#E2E8F0" stroke-width="3"/>
+        <line x1="126" y1="176" x2="90" y2="208" stroke="#E2E8F0" stroke-width="3"/>
+        <line x1="174" y1="176" x2="210" y2="208" stroke="#E2E8F0" stroke-width="3"/>
 
         <!-- animated flow dots: solar -> hub (always) -->
-        <circle r="3.5" fill="#FDB750">
+        <circle r="3.5" fill="#E8912A">
           <animateMotion dur="1.6s" repeatCount="indefinite" path="M150,72 L150,112"/>
         </circle>
         <!-- hub -> home (always) -->
-        <circle r="3.5" fill="#5C8DF6">
+        <circle r="3.5" fill="#2563EB">
           <animateMotion dur="1.6s" repeatCount="indefinite" path="M174,176 L210,208"/>
         </circle>
         <!-- hub -> battery (surplus/export direction) -->
-        <circle id="dotExport" r="3.5" fill="#35D0B8">
+        <circle id="dotExport" r="3.5" fill="#0D9488">
           <animateMotion dur="1.6s" repeatCount="indefinite" path="M126,176 L90,208"/>
         </circle>
         <!-- battery -> hub (deficit/import direction) -->
-        <circle id="dotImport" r="3.5" fill="#FF5C72" class="hidden">
+        <circle id="dotImport" r="3.5" fill="#DC2626" class="hidden">
           <animateMotion dur="1.6s" repeatCount="indefinite" path="M90,208 L126,176"/>
         </circle>
 
         <!-- Solar node -->
-        <circle cx="150" cy="42" r="30" fill="#121B2B" stroke="#FDB750" stroke-width="2"/>
-        <text x="150" y="38" text-anchor="middle" font-size="18" fill="#FDB750">&#9728;</text>
-        <text x="150" y="14" text-anchor="middle" font-size="9" fill="#7C8BA0" font-family="sans-serif">SOLAR</text>
-        <text id="svgSolarVal" x="150" y="52" text-anchor="middle" font-size="10" fill="#EDF2F7" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+        <circle cx="150" cy="42" r="30" fill="#FFFFFF" stroke="#E8912A" stroke-width="2"/>
+        <text x="150" y="38" text-anchor="middle" font-size="18" fill="#E8912A">&#9728;</text>
+        <text x="150" y="14" text-anchor="middle" font-size="9" fill="#64748B" font-family="sans-serif">SOLAR</text>
+        <text id="svgSolarVal" x="150" y="52" text-anchor="middle" font-size="10" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
 
         <!-- Hub -->
-        <circle cx="150" cy="150" r="44" fill="#0D1421" stroke="#263348" stroke-width="2"/>
-        <text x="150" y="144" text-anchor="middle" font-size="9" fill="#7C8BA0" font-family="sans-serif">NET</text>
-        <text id="svgNetVal" x="150" y="163" text-anchor="middle" font-size="17" fill="#EDF2F7" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+        <circle cx="150" cy="150" r="44" fill="#F0F3F7" stroke="#CBD5E1" stroke-width="2"/>
+        <text x="150" y="144" text-anchor="middle" font-size="9" fill="#64748B" font-family="sans-serif">NET</text>
+        <text id="svgNetVal" x="150" y="163" text-anchor="middle" font-size="17" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
 
         <!-- Battery/Grid node -->
-        <circle cx="68" cy="235" r="28" fill="#121B2B" stroke="#35D0B8" stroke-width="2"/>
-        <text id="svgBattIcon" x="68" y="231" text-anchor="middle" font-size="16" fill="#35D0B8">&#128267;</text>
-        <text id="svgBattLabel" x="68" y="209" text-anchor="middle" font-size="8.5" fill="#7C8BA0" font-family="sans-serif">SURPLUS</text>
+        <circle cx="68" cy="235" r="28" fill="#FFFFFF" stroke="#0D9488" stroke-width="2"/>
+        <text id="svgBattIcon" x="68" y="231" text-anchor="middle" font-size="16" fill="#0D9488">&#128267;</text>
+        <text id="svgBattLabel" x="68" y="209" text-anchor="middle" font-size="8.5" fill="#64748B" font-family="sans-serif">SURPLUS</text>
 
         <!-- Home node -->
-        <circle cx="232" cy="235" r="28" fill="#121B2B" stroke="#5C8DF6" stroke-width="2"/>
-        <text x="232" y="231" text-anchor="middle" font-size="16" fill="#5C8DF6">&#127968;</text>
-        <text x="232" y="209" text-anchor="middle" font-size="8.5" fill="#7C8BA0" font-family="sans-serif">HOME</text>
-        <text id="svgLoadVal" x="232" y="252" text-anchor="middle" font-size="9.5" fill="#EDF2F7" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+        <circle cx="232" cy="235" r="28" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+        <text x="232" y="231" text-anchor="middle" font-size="16" fill="#2563EB">&#127968;</text>
+        <text x="232" y="209" text-anchor="middle" font-size="8.5" fill="#64748B" font-family="sans-serif">HOME</text>
+        <text id="svgLoadVal" x="232" y="252" text-anchor="middle" font-size="9.5" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
       </svg>
       <div class="flow-net-label" id="netSub">Waiting for data...</div>
+      <div class="temp-badge" id="tempBadge">&#127777;&#65039; -- &deg;C</div>
     </div>
 
     <div class="section-title">Dynamic Priority Cascade</div>
@@ -358,6 +459,40 @@
 
     <div class="section-title">Net Power History</div>
     <div class="chart-card"><canvas id="netChart"></canvas></div>
+  </div>
+
+  <!-- Energy tab -->
+  <div id="tab-energy" class="hidden">
+    <div class="energy-disclaimer">
+      <strong>Estimated figures.</strong> Calculated from your solar and load sensor readings over time, not read directly from your WAPDA net meter. Use your official meter/bill for billing purposes.
+    </div>
+
+    <div class="energy-grid">
+      <div class="energy-card export">
+        <div class="energy-label">Exported to Grid</div>
+        <div class="energy-value" id="energyExportedTotal">-- kWh</div>
+        <div class="energy-sub">Lifetime estimate</div>
+      </div>
+      <div class="energy-card import">
+        <div class="energy-label">Imported from Grid</div>
+        <div class="energy-value" id="energyImportedTotal">-- kWh</div>
+        <div class="energy-sub">Lifetime estimate</div>
+      </div>
+    </div>
+
+    <div class="energy-grid">
+      <div class="energy-card-sm export">
+        <div class="energy-label">Today - Exported</div>
+        <div class="energy-value-sm" id="energyExportedToday">-- kWh</div>
+      </div>
+      <div class="energy-card-sm import">
+        <div class="energy-label">Today - Imported</div>
+        <div class="energy-value-sm" id="energyImportedToday">-- kWh</div>
+      </div>
+    </div>
+
+    <div class="section-title">Daily Exported Units (last 14 days)</div>
+    <div class="chart-card"><canvas id="energyChart"></canvas></div>
   </div>
 
   <!-- Events tab -->
@@ -410,6 +545,7 @@
   <div class="bottom-nav">
     <div class="bottom-nav-inner">
       <div class="nav-item active" data-tab="dashboard"><div class="nav-icon">&#9679;</div>Dashboard</div>
+      <div class="nav-item" data-tab="energy"><div class="nav-icon">&#127760;</div>Energy</div>
       <div class="nav-item" data-tab="events"><div class="nav-icon">&#128337;</div>Events</div>
       <div class="nav-item" data-tab="settings"><div class="nav-icon">&#9881;</div>Settings</div>
     </div>
@@ -643,9 +779,10 @@ document.querySelectorAll('.nav-item').forEach(navEl => {
   navEl.onclick = () => {
     activeTab = navEl.getAttribute('data-tab');
     document.querySelectorAll('.nav-item').forEach(t=>t.classList.toggle('active', t===navEl));
-    ['dashboard','events','settings'].forEach(t=>{ document.getElementById('tab-'+t).classList.toggle('hidden', t !== activeTab); });
+    ['dashboard','energy','events','settings'].forEach(t=>{ document.getElementById('tab-'+t).classList.toggle('hidden', t !== activeTab); });
     if (activeTab === 'events') loadEvents();
     if (activeTab === 'settings') initPriorityEditor();
+    if (activeTab === 'energy') loadEnergy();
   };
 });
 
@@ -654,7 +791,7 @@ function openDevice(id){
   activeTab = 'dashboard';
   localPriorityOrder = null;
   document.querySelectorAll('.nav-item').forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')==='dashboard'));
-  ['dashboard','events','settings'].forEach(t=>{ document.getElementById('tab-'+t).classList.toggle('hidden', t !== 'dashboard'); });
+  ['dashboard','energy','events','settings'].forEach(t=>{ document.getElementById('tab-'+t).classList.toggle('hidden', t !== 'dashboard'); });
   showScreen('screen-device');
   initChart();
   renderDeviceDetail();
@@ -689,10 +826,20 @@ function renderDeviceDetail(){
   document.getElementById('svgSolarVal').textContent = fmt(solarW) + ' W';
   document.getElementById('svgLoadVal').textContent = fmt(loadW) + ' W';
   document.getElementById('svgNetVal').textContent = net===null?'--':(net>0?'+':'')+Math.round(net)+' W';
-  document.getElementById('svgNetVal').setAttribute('fill', net===null?'#EDF2F7':(net>=0?'#35D0B8':'#FF5C72'));
+  document.getElementById('svgNetVal').setAttribute('fill', net===null?'#0F172A':(net>=0?'#0D9488':'#DC2626'));
   document.querySelector('.flow-card').classList.toggle('waiting', net === null);
   document.getElementById('netSub').textContent = net===null ? 'Waiting for data...' :
     (net>=0 ? 'Surplus - solar is covering the load' : 'Deficit - drawing extra from battery/grid');
+
+  const temp = typeof sys.temperatureC === 'number' ? sys.temperatureC : null;
+  const tempBadge = document.getElementById('tempBadge');
+  if (temp === null){
+    tempBadge.innerHTML = '&#127777;&#65039; -- &deg;C';
+    tempBadge.className = 'temp-badge';
+  } else {
+    tempBadge.innerHTML = '&#127777;&#65039; ' + temp.toFixed(1) + ' &deg;C';
+    tempBadge.className = 'temp-badge' + (temp >= 55 ? ' hot' : temp >= 40 ? ' warm' : '');
+  }
 
   const exportDot = document.getElementById('dotExport');
   const importDot = document.getElementById('dotImport');
@@ -836,6 +983,62 @@ document.getElementById('savePriorityBtn').onclick = async () => {
 };
 
 // =======================================================================
+// ENERGY (estimated net-metering units)
+// =======================================================================
+let energyChart = null;
+
+function fmtKwh(wh){
+  if (typeof wh !== 'number' || isNaN(wh)) return '-- kWh';
+  return (wh/1000).toFixed(2) + ' kWh';
+}
+
+function loadEnergy(){
+  if (!activeDeviceId) return;
+  const d = devices[activeDeviceId] || {};
+  const energy = d.energy || {};
+
+  document.getElementById('energyExportedTotal').textContent = fmtKwh(energy.exportedWh);
+  document.getElementById('energyImportedTotal').textContent = fmtKwh(energy.importedWh);
+
+  // Today's date (UTC, matching the firmware's date bucketing)
+  const today = new Date().toISOString().slice(0,10);
+  db.ref('/devices/'+activeDeviceId+'/energy/daily/'+today).once('value', snap => {
+    const v = snap.val() || {};
+    document.getElementById('energyExportedToday').textContent = fmtKwh(v.exportedWh);
+    document.getElementById('energyImportedToday').textContent = fmtKwh(v.importedWh);
+  });
+
+  // Last 14 days for the chart
+  db.ref('/devices/'+activeDeviceId+'/energy/daily').limitToLast(14).once('value', snap => {
+    const days = [];
+    snap.forEach(child => {
+      days.push({ date: child.key, exportedWh: (child.val() || {}).exportedWh || 0 });
+    });
+    days.sort((a,b) => a.date < b.date ? -1 : 1);
+    renderEnergyChart(days);
+  });
+}
+
+function renderEnergyChart(days){
+  const ctx = document.getElementById('energyChart').getContext('2d');
+  const labels = days.map(d => d.date.slice(5)); // MM-DD
+  const values = days.map(d => +(d.exportedWh/1000).toFixed(2));
+  if (energyChart) energyChart.destroy();
+  energyChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: values, backgroundColor: '#0D9488', borderRadius: 6, maxBarThickness: 28 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#64748B', font:{size:9}} },
+        y:{ grid:{color:'#E2E8F0'}, ticks:{color:'#64748B', font:{size:10}} }
+      }
+    }
+  });
+}
+
+// =======================================================================
 // EVENTS
 // =======================================================================
 function loadEvents(){
@@ -866,9 +1069,9 @@ function initChart(){
   if (netChart) netChart.destroy();
   netChart = new Chart(ctx, {
     type:'line',
-    data:{ labels:[], datasets:[{ data:[], borderColor:'#35D0B8', backgroundColor:'rgba(53,208,184,0.08)', fill:true, tension:.35, pointRadius:0, borderWidth:2 }]},
+    data:{ labels:[], datasets:[{ data:[], borderColor:'#0D9488', backgroundColor:'rgba(13,148,136,0.08)', fill:true, tension:.35, pointRadius:0, borderWidth:2 }]},
     options:{ responsive:true, maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}},
-      scales:{ x:{display:false}, y:{ grid:{color:'#1B2429'}, ticks:{color:'#7C8BA0', font:{size:10}} } } }
+      scales:{ x:{display:false}, y:{ grid:{color:'#1B2429'}, ticks:{color:'#64748B', font:{size:10}} } } }
   });
 }
 function loadHistory(){
