@@ -31,6 +31,16 @@
     --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
+  [data-theme="dark"]{
+    --bg:#0A0F1A; --bg2:#0F1A2E; --card:#121B2B; --card2:#0D1421;
+    --border:#1E293B; --border2:#263348;
+    --text:#EDF2F7; --muted:#7C8BA0; --muted2:#4B5A70;
+    --battery:#35D0B8; --grid:#5C8DF6; --pos:#35D0B8; --neg:#FF5C72;
+    --shadow: 0 4px 16px rgba(0,0,0,0.35);
+  }
+  .theme-toggle{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:4px;width:fit-content;}
+  .theme-opt{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
+  .theme-opt.active{background:var(--card);color:var(--sun);box-shadow:var(--shadow);}
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;}
   button,input{font-family:var(--sans);}
@@ -131,6 +141,26 @@
 
   /* ---------- Energy tab ---------- */
   .energy-disclaimer{background:#FFF7ED;border:1px solid #FDE1B8;color:#92400E;font-size:12px;line-height:1.5;padding:12px 14px;border-radius:12px;margin-bottom:16px;}
+
+  .savings-hero{background:linear-gradient(160deg,#0D9488,#0F766E);border-radius:22px;padding:26px 22px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden;}
+  .savings-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,0.15),transparent 70%);}
+  .savings-label{font-size:12px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;}
+  .savings-value{font-family:var(--mono);font-size:36px;font-weight:700;color:#fff;position:relative;z-index:1;}
+  .savings-sub{font-size:12px;color:rgba(255,255,255,0.8);margin-top:6px;position:relative;z-index:1;}
+  .savings-fun{font-size:12px;color:rgba(255,255,255,0.9);margin-top:12px;position:relative;z-index:1;background:rgba(255,255,255,0.12);display:inline-block;padding:6px 14px;border-radius:999px;}
+
+  .section-title-row{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px 2px;}
+  .period-toggle{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:3px;}
+  .period-opt{padding:5px 10px;border-radius:999px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;}
+  .period-opt.active{background:var(--card);color:var(--pos);box-shadow:var(--shadow);}
+
+  .onboard-dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px;}
+  .onboard-dots span{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:.2s;}
+  .onboard-dots span.active{background:var(--sun);width:20px;border-radius:4px;}
+  .onboard-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:18px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;}
+  #modalOnboarding .modal{text-align:center;}
+  #modalOnboarding h3{margin-bottom:8px;}
+  #modalOnboarding p{margin-bottom:4px;}
   .energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
   .energy-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
   .energy-card.export{border-top:3px solid var(--pos);}
@@ -234,19 +264,19 @@
   <div class="splash-glow"></div>
   <svg class="splash-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="display:block;">
       <defs>
-        <linearGradient id="bgGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="bgGradLogo1" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#0F1A2E"/><stop offset="100%" stop-color="#0A0F1A"/>
         </linearGradient>
-        <linearGradient id="sunGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="sunGradLogo1" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#E8912A"/><stop offset="100%" stop-color="#D9631F"/>
         </linearGradient>
-        <radialGradient id="glowLogo" cx="50%" cy="38%" r="55%">
+        <radialGradient id="glowLogo1" cx="50%" cy="38%" r="55%">
           <stop offset="0%" stop-color="#E8912A" stop-opacity="0.35"/><stop offset="100%" stop-color="#E8912A" stop-opacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo)"/>
-      <rect width="512" height="512" rx="112" fill="url(#glowLogo)"/>
-      <g stroke="url(#sunGradLogo)" stroke-width="14" stroke-linecap="round">
+      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo1)"/>
+      <rect width="512" height="512" rx="112" fill="url(#glowLogo1)"/>
+      <g stroke="url(#sunGradLogo1)" stroke-width="14" stroke-linecap="round">
         <line x1="256" y1="96" x2="256" y2="132"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(45 256 200)"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-45 256 200)"/>
@@ -255,9 +285,9 @@
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(135 256 200)"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-135 256 200)"/>
       </g>
-      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo)"/>
-      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo)" stroke-width="10" stroke-linejoin="round"/>
-      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo)" fill-opacity="0.14"/>
+      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo1)"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo1)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo1)" fill-opacity="0.14"/>
     </svg>
   <div class="splash-title">Solar<span>Load</span>Manager</div>
   <div class="splash-dots"><span></span><span></span><span></span></div>
@@ -268,19 +298,19 @@
 
   <svg width="76" height="76" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 14px;box-shadow:0 8px 24px rgba(232,145,42,0.2);border-radius:20px;display:block;">
       <defs>
-        <linearGradient id="bgGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="bgGradLogo2" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#0F1A2E"/><stop offset="100%" stop-color="#0A0F1A"/>
         </linearGradient>
-        <linearGradient id="sunGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="sunGradLogo2" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#E8912A"/><stop offset="100%" stop-color="#D9631F"/>
         </linearGradient>
-        <radialGradient id="glowLogo" cx="50%" cy="38%" r="55%">
+        <radialGradient id="glowLogo2" cx="50%" cy="38%" r="55%">
           <stop offset="0%" stop-color="#E8912A" stop-opacity="0.35"/><stop offset="100%" stop-color="#E8912A" stop-opacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo)"/>
-      <rect width="512" height="512" rx="112" fill="url(#glowLogo)"/>
-      <g stroke="url(#sunGradLogo)" stroke-width="14" stroke-linecap="round">
+      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo2)"/>
+      <rect width="512" height="512" rx="112" fill="url(#glowLogo2)"/>
+      <g stroke="url(#sunGradLogo2)" stroke-width="14" stroke-linecap="round">
         <line x1="256" y1="96" x2="256" y2="132"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(45 256 200)"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-45 256 200)"/>
@@ -289,9 +319,9 @@
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(135 256 200)"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-135 256 200)"/>
       </g>
-      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo)"/>
-      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo)" stroke-width="10" stroke-linejoin="round"/>
-      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo)" fill-opacity="0.14"/>
+      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo2)"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo2)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo2)" fill-opacity="0.14"/>
     </svg>
   <div class="auth-logo">Solar<span>Load</span>Manager</div>
   <div class="auth-sub">Dynamic solar vs. home load management</div>
@@ -327,19 +357,19 @@
     <div class="brand" style="display:flex;align-items:center;gap:9px;">
       <svg width="26" height="26" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px;display:block;">
       <defs>
-        <linearGradient id="bgGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="bgGradLogo3" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#0F1A2E"/><stop offset="100%" stop-color="#0A0F1A"/>
         </linearGradient>
-        <linearGradient id="sunGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="sunGradLogo3" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#E8912A"/><stop offset="100%" stop-color="#D9631F"/>
         </linearGradient>
-        <radialGradient id="glowLogo" cx="50%" cy="38%" r="55%">
+        <radialGradient id="glowLogo3" cx="50%" cy="38%" r="55%">
           <stop offset="0%" stop-color="#E8912A" stop-opacity="0.35"/><stop offset="100%" stop-color="#E8912A" stop-opacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo)"/>
-      <rect width="512" height="512" rx="112" fill="url(#glowLogo)"/>
-      <g stroke="url(#sunGradLogo)" stroke-width="14" stroke-linecap="round">
+      <rect width="512" height="512" rx="112" fill="url(#bgGradLogo3)"/>
+      <rect width="512" height="512" rx="112" fill="url(#glowLogo3)"/>
+      <g stroke="url(#sunGradLogo3)" stroke-width="14" stroke-linecap="round">
         <line x1="256" y1="96" x2="256" y2="132"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(45 256 200)"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-45 256 200)"/>
@@ -348,9 +378,9 @@
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(135 256 200)"/>
         <line x1="256" y1="96" x2="256" y2="132" transform="rotate(-135 256 200)"/>
       </g>
-      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo)"/>
-      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo)" stroke-width="10" stroke-linejoin="round"/>
-      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo)" fill-opacity="0.14"/>
+      <circle cx="256" cy="200" r="58" fill="url(#sunGradLogo3)"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="#0A0F1A" stroke="url(#sunGradLogo3)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M296 268 L226 388 L254 388 L226 460 L320 340 L288 340 L318 268 Z" fill="url(#sunGradLogo3)" fill-opacity="0.14"/>
     </svg>
       Solar<span>Load</span>Manager
     </div>
@@ -386,6 +416,20 @@
     <div class="icon-picker" id="iconPickerGrid"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="cancelIconPicker">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= ONBOARDING WALKTHROUGH ============================= -->
+<div id="modalOnboarding" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="onboard-dots" id="onboardDots"></div>
+    <div class="onboard-icon" id="onboardIcon">&#127774;</div>
+    <h3 id="onboardTitle">Welcome to Solar Load Manager</h3>
+    <p id="onboardText">Let's take 30 seconds to show you around.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="onboardSkip">Skip</button>
+      <button class="btn btn-primary" id="onboardNext">Next</button>
     </div>
   </div>
 </div>
@@ -463,6 +507,13 @@
 
   <!-- Energy tab -->
   <div id="tab-energy" class="hidden">
+    <div class="savings-hero">
+      <div class="savings-label">Estimated total savings</div>
+      <div class="savings-value"><span id="savingsAmount">Rs. --</span></div>
+      <div class="savings-sub" id="savingsSub">Set your tariff rates below to calculate</div>
+      <div class="savings-fun" id="savingsFun"></div>
+    </div>
+
     <div class="energy-disclaimer">
       <strong>Estimated figures.</strong> Calculated from your solar and load sensor readings over time, not read directly from your WAPDA net meter. Use your official meter/bill for billing purposes.
     </div>
@@ -491,8 +542,25 @@
       </div>
     </div>
 
-    <div class="section-title">Daily Exported Units (last 14 days)</div>
+    <div class="section-title-row">
+      <div class="section-title" style="margin:0;">Exported Units</div>
+      <div class="period-toggle">
+        <div class="period-opt active" data-period="daily" onclick="setEnergyPeriod('daily')">Daily</div>
+        <div class="period-opt" data-period="weekly" onclick="setEnergyPeriod('weekly')">Weekly</div>
+        <div class="period-opt" data-period="monthly" onclick="setEnergyPeriod('monthly')">Monthly</div>
+      </div>
+    </div>
     <div class="chart-card"><canvas id="energyChart"></canvas></div>
+
+    <button class="btn btn-ghost" style="margin-top:14px;" id="exportCsvBtn">Download CSV report</button>
+
+    <div class="settings-card" style="margin-top:16px;">
+      <h4>Tariff rates</h4>
+      <div class="hint">Used only to estimate savings above. Enter your actual WAPDA rates for accuracy.</div>
+      <div class="th-row"><label>Import rate (Rs./kWh)</label><input type="number" id="rateImport" step="0.01"></div>
+      <div class="th-row"><label>Export/buyback rate (Rs./kWh)</label><input type="number" id="rateExport" step="0.01"></div>
+      <button class="btn btn-primary" style="margin-top:6px;" id="saveRatesBtn">Save Rates</button>
+    </div>
   </div>
 
   <!-- Events tab -->
@@ -505,6 +573,15 @@
 
   <!-- Settings tab -->
   <div id="tab-settings" class="hidden">
+    <div class="settings-card">
+      <h4>Appearance</h4>
+      <div class="hint">Choose light or dark mode. Applies across the whole app.</div>
+      <div class="theme-toggle">
+        <div class="theme-opt" data-mode="light" onclick="setTheme('light')">Light</div>
+        <div class="theme-opt" data-mode="dark" onclick="setTheme('dark')">Dark</div>
+      </div>
+    </div>
+
     <div class="settings-card">
       <h4>Device name</h4>
       <div class="hint">Shown on your device list.</div>
@@ -553,6 +630,20 @@
 </div>
 
 <script>
+// Apply saved theme immediately, before anything else renders
+(function(){
+  const saved = localStorage.getItem('theme') || 'light';
+  setTheme(saved);
+})();
+
+function setTheme(mode){
+  localStorage.setItem('theme', mode);
+  if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', mode === 'dark' ? '#0A0F1A' : '#F4F6F9');
+  document.querySelectorAll('.theme-opt').forEach(el => el.classList.toggle('active', el.dataset.mode === mode));
+}
+
 // =======================================================================
 // FIREBASE INIT
 // =======================================================================
@@ -672,7 +763,11 @@ auth.onAuthStateChanged(user => {
   const elapsed = Date.now() - appStartTime;
   const wait = Math.max(0, MIN_SPLASH_MS - elapsed);
   setTimeout(() => {
-    if (user){ showScreen('screen-devices'); listenToUserDevices(); }
+    if (user){
+      showScreen('screen-devices');
+      listenToUserDevices();
+      if (!localStorage.getItem('onboarded')) setTimeout(showOnboarding, 400);
+    }
     else showScreen('screen-auth');
   }, wait);
 });
@@ -983,22 +1078,62 @@ document.getElementById('savePriorityBtn').onclick = async () => {
 };
 
 // =======================================================================
-// ENERGY (estimated net-metering units)
+// ENERGY (estimated net-metering units + cost savings)
 // =======================================================================
 let energyChart = null;
+let energyPeriod = 'daily';
+let cachedDailyRecords = [];
 
 function fmtKwh(wh){
   if (typeof wh !== 'number' || isNaN(wh)) return '-- kWh';
   return (wh/1000).toFixed(2) + ' kWh';
 }
 
+function animateCounter(el, target, prefix, decimals){
+  const duration = 900;
+  const start = 0;
+  const startTime = performance.now();
+  function tick(now){
+    const progress = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const val = start + (target - start) * eased;
+    el.textContent = prefix + val.toLocaleString('en-US', {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 function loadEnergy(){
   if (!activeDeviceId) return;
   const d = devices[activeDeviceId] || {};
   const energy = d.energy || {};
+  const rates = d.rates || {};
 
   document.getElementById('energyExportedTotal').textContent = fmtKwh(energy.exportedWh);
   document.getElementById('energyImportedTotal').textContent = fmtKwh(energy.importedWh);
+
+  if (!document.getElementById('rateImport').dataset.dirty) document.getElementById('rateImport').value = rates.importRate ?? '';
+  if (!document.getElementById('rateExport').dataset.dirty) document.getElementById('rateExport').value = rates.exportRate ?? '';
+
+  // Savings calculation
+  const importRate = rates.importRate;
+  const exportRate = rates.exportRate;
+  const savingsEl = document.getElementById('savingsAmount');
+  const savingsSub = document.getElementById('savingsSub');
+  const savingsFun = document.getElementById('savingsFun');
+  if (importRate && exportRate && typeof energy.solarWh === 'number'){
+    const selfConsumedKwh = Math.max(0, (energy.solarWh - (energy.exportedWh||0)) / 1000);
+    const exportedKwh = (energy.exportedWh||0) / 1000;
+    const totalSavings = selfConsumedKwh * importRate + exportedKwh * exportRate;
+    animateCounter(savingsEl, totalSavings, 'Rs. ', 0);
+    savingsSub.textContent = selfConsumedKwh.toFixed(1) + ' kWh self-used + ' + exportedKwh.toFixed(1) + ' kWh exported';
+    const co2Kg = ((energy.solarWh||0)/1000) * 0.5; // ~0.5 kg CO2 avoided per kWh, grid-average estimate
+    savingsFun.textContent = '~' + co2Kg.toFixed(0) + ' kg CO2 avoided';
+  } else {
+    savingsEl.textContent = 'Rs. --';
+    savingsSub.textContent = 'Set your tariff rates below to calculate';
+    savingsFun.textContent = '';
+  }
 
   // Today's date (UTC, matching the firmware's date bucketing)
   const today = new Date().toISOString().slice(0,10);
@@ -1008,21 +1143,71 @@ function loadEnergy(){
     document.getElementById('energyImportedToday').textContent = fmtKwh(v.importedWh);
   });
 
-  // Last 14 days for the chart
-  db.ref('/devices/'+activeDeviceId+'/energy/daily').limitToLast(14).once('value', snap => {
+  // Last 90 days cached client-side, then aggregated per the selected period
+  db.ref('/devices/'+activeDeviceId+'/energy/daily').limitToLast(90).once('value', snap => {
     const days = [];
     snap.forEach(child => {
-      days.push({ date: child.key, exportedWh: (child.val() || {}).exportedWh || 0 });
+      const v = child.val() || {};
+      days.push({ date: child.key, exportedWh: v.exportedWh || 0, importedWh: v.importedWh || 0 });
     });
     days.sort((a,b) => a.date < b.date ? -1 : 1);
-    renderEnergyChart(days);
+    cachedDailyRecords = days;
+    renderEnergyChart();
   });
 }
 
-function renderEnergyChart(days){
+document.querySelectorAll('#tab-energy input[type=number]').forEach(el=>{
+  el.addEventListener('input', ()=> el.dataset.dirty = '1');
+});
+
+document.getElementById('saveRatesBtn').onclick = async () => {
+  if (!activeDeviceId) return;
+  const importRate = parseFloat(document.getElementById('rateImport').value);
+  const exportRate = parseFloat(document.getElementById('rateExport').value);
+  const updates = {};
+  if (!isNaN(importRate)) updates['/devices/'+activeDeviceId+'/rates/importRate'] = importRate;
+  if (!isNaN(exportRate)) updates['/devices/'+activeDeviceId+'/rates/exportRate'] = exportRate;
+  await db.ref().update(updates);
+  document.querySelectorAll('#tab-energy input[type=number]').forEach(el=> el.dataset.dirty = '');
+  showToast('Tariff rates saved');
+};
+
+function setEnergyPeriod(period){
+  energyPeriod = period;
+  document.querySelectorAll('.period-opt').forEach(el => el.classList.toggle('active', el.dataset.period === period));
+  renderEnergyChart();
+}
+
+function aggregateByWeek(days){
+  const weeks = {};
+  days.forEach(d => {
+    const dt = new Date(d.date + 'T00:00:00Z');
+    const weekStart = new Date(dt);
+    weekStart.setUTCDate(dt.getUTCDate() - dt.getUTCDay());
+    const key = weekStart.toISOString().slice(0,10);
+    weeks[key] = (weeks[key] || 0) + d.exportedWh;
+  });
+  return Object.keys(weeks).sort().map(k => ({ label: k.slice(5), exportedWh: weeks[k] }));
+}
+
+function aggregateByMonth(days){
+  const months = {};
+  days.forEach(d => {
+    const key = d.date.slice(0,7);
+    months[key] = (months[key] || 0) + d.exportedWh;
+  });
+  return Object.keys(months).sort().map(k => ({ label: k, exportedWh: months[k] }));
+}
+
+function renderEnergyChart(){
+  let points;
+  if (energyPeriod === 'weekly') points = aggregateByWeek(cachedDailyRecords);
+  else if (energyPeriod === 'monthly') points = aggregateByMonth(cachedDailyRecords);
+  else points = cachedDailyRecords.map(d => ({ label: d.date.slice(5), exportedWh: d.exportedWh }));
+
   const ctx = document.getElementById('energyChart').getContext('2d');
-  const labels = days.map(d => d.date.slice(5)); // MM-DD
-  const values = days.map(d => +(d.exportedWh/1000).toFixed(2));
+  const labels = points.map(p => p.label);
+  const values = points.map(p => +(p.exportedWh/1000).toFixed(2));
   if (energyChart) energyChart.destroy();
   energyChart = new Chart(ctx, {
     type: 'bar',
@@ -1037,6 +1222,23 @@ function renderEnergyChart(days){
     }
   });
 }
+
+document.getElementById('exportCsvBtn').onclick = () => {
+  if (!cachedDailyRecords.length){ showToast('No data to export yet'); return; }
+  let csv = 'Date,Exported (kWh),Imported (kWh)\n';
+  cachedDailyRecords.forEach(d => {
+    csv += `${d.date},${(d.exportedWh/1000).toFixed(3)},${(d.importedWh/1000).toFixed(3)}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'energy_report_' + (activeDeviceId||'device') + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
 
 // =======================================================================
 // EVENTS
@@ -1087,6 +1289,42 @@ function loadHistory(){
 }
 
 document.getElementById('authPassword').addEventListener('keydown', e=>{ if (e.key === 'Enter') document.getElementById('authSubmitBtn').click(); });
+
+// =======================================================================
+// ONBOARDING WALKTHROUGH
+// =======================================================================
+const onboardSteps = [
+  { icon: '&#127774;', title: 'Welcome to Solar Load Manager', text: "Let's take 30 seconds to show you around." },
+  { icon: '&#9679;', title: 'Live Dashboard', text: 'See solar generation, home load, and net power flow in real time, plus which loads are currently switched on.' },
+  { icon: '&#127760;', title: 'Energy & Savings', text: 'Track exported/imported units and see an estimate of how much your system is saving you.' },
+  { icon: '&#9881;', title: 'Reassign Priorities Anytime', text: 'In Settings, drag-reorder which appliance is Priority 1-4 - no rewiring needed, ever.' }
+];
+let onboardIndex = 0;
+
+function renderOnboardStep(){
+  const s = onboardSteps[onboardIndex];
+  document.getElementById('onboardIcon').innerHTML = s.icon;
+  document.getElementById('onboardTitle').textContent = s.title;
+  document.getElementById('onboardText').textContent = s.text;
+  document.getElementById('onboardNext').textContent = onboardIndex === onboardSteps.length - 1 ? 'Get Started' : 'Next';
+  document.getElementById('onboardDots').innerHTML = onboardSteps.map((_, i) =>
+    `<span class="${i === onboardIndex ? 'active' : ''}"></span>`).join('');
+}
+
+function showOnboarding(){
+  onboardIndex = 0;
+  renderOnboardStep();
+  document.getElementById('modalOnboarding').classList.remove('hidden');
+}
+function closeOnboarding(){
+  localStorage.setItem('onboarded', '1');
+  document.getElementById('modalOnboarding').classList.add('hidden');
+}
+document.getElementById('onboardSkip').onclick = closeOnboarding;
+document.getElementById('onboardNext').onclick = () => {
+  if (onboardIndex < onboardSteps.length - 1){ onboardIndex++; renderOnboardStep(); }
+  else closeOnboarding();
+};
 
 // Register service worker so the browser treats this as a fully installable
 // PWA (custom icon + true full-screen standalone mode on Android too)
