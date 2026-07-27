@@ -897,7 +897,14 @@ function getLoadConfig(d){
   const lc = d.loadConfig || {};
   const out = {};
   [1,2,3,4].forEach(r=>{
-    out['priority'+r] = lc['priority'+r] || DEFAULT_LOAD_CONFIG['priority'+r];
+    const key = 'priority'+r;
+    const stored = lc[key] || {};
+    const def = DEFAULT_LOAD_CONFIG[key];
+    out[key] = {
+      relay: stored.relay !== undefined ? stored.relay : def.relay,
+      name:  stored.name  !== undefined ? stored.name  : def.name,
+      icon:  stored.icon  !== undefined ? stored.icon  : def.icon
+    };
   });
   return out;
 }
