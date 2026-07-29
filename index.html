@@ -115,7 +115,23 @@
   .nav-item.active{color:var(--sun);}
 
   /* ---------- Power flow diagram ---------- */
-  .flow-card{background:radial-gradient(120% 100% at 50% -10%, #EEF2F7 0%, #FAFBFC 60%);border:1px solid var(--border);border-radius:22px;padding:8px 8px 16px;margin-bottom:16px;overflow:hidden;transition:opacity .3s;}
+  .flow-card{background:radial-gradient(120% 100% at 50% -10%, #EEF2F7 0%, #FAFBFC 60%);border:1px solid var(--border);border-radius:22px;padding:8px 8px 16px;margin-bottom:16px;overflow:hidden;transition:opacity .3s;position:relative;}
+
+  .netmap-legend{position:absolute;top:14px;right:16px;display:flex;gap:12px;font-size:10px;color:var(--muted);z-index:2;}
+  .netmap-legend span{display:flex;align-items:center;gap:4px;}
+  .dot-legend{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .dot-legend.on{background:#0D9488;}
+  .dot-legend.off{background:#94A3B8;}
+
+  .devcircle{transition:stroke .3s, fill .3s;}
+  .devcircle.on{stroke:#0D9488;fill:#F0FDFA;}
+  .statusdot{transition:fill .3s;}
+  .statusdot.on{fill:#0D9488;animation:statusPulse 1.6s ease-in-out infinite;}
+  @keyframes statusPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+
+  .devlink{transition:stroke .3s;}
+  .devlink.on{stroke:#0D9488 !important;}
+  .devlink.off{stroke:#CBD5E1 !important;stroke-dasharray:4 4;}
   .flow-card.waiting{animation:waitingPulse 1.8s ease-in-out infinite;}
   @keyframes waitingPulse{0%,100%{opacity:1;}50%{opacity:.72;}}
   .flow-svg{width:100%;height:auto;display:block;}
@@ -449,57 +465,73 @@
   <!-- Dashboard tab -->
   <div id="tab-dashboard">
     <div class="flow-card">
-      <svg class="flow-svg" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
-        <!-- connector lines -->
-        <line x1="150" y1="72" x2="150" y2="112" stroke="#E2E8F0" stroke-width="3"/>
-        <line x1="126" y1="176" x2="90" y2="208" stroke="#E2E8F0" stroke-width="3"/>
-        <line x1="174" y1="176" x2="210" y2="208" stroke="#E2E8F0" stroke-width="3"/>
+      <div class="netmap-legend">
+        <span><i class="dot-legend on"></i> Active</span>
+        <span><i class="dot-legend off"></i> Inactive</span>
+      </div>
+      <svg class="flow-svg" viewBox="0 0 340 440" xmlns="http://www.w3.org/2000/svg">
+        <!-- energy tier connections (always-on flow) -->
+        <line x1="170" y1="210" x2="170" y2="60" stroke="#CBD5E1" stroke-width="2.5"/>
+        <line x1="170" y1="210" x2="300" y2="135" stroke="#CBD5E1" stroke-width="2.5"/>
+        <circle r="3.5" fill="#E8912A"><animateMotion dur="1.6s" repeatCount="indefinite" path="M170,150 L170,88"/></circle>
+        <circle r="3.5" fill="#2563EB"><animateMotion dur="1.6s" repeatCount="indefinite" path="M195,190 L275,150"/></circle>
 
-        <!-- animated flow dots: solar -> hub (always) -->
-        <circle r="3.5" fill="#E8912A">
-          <animateMotion dur="1.6s" repeatCount="indefinite" path="M150,72 L150,112"/>
-        </circle>
-        <!-- hub -> home (always) -->
-        <circle r="3.5" fill="#2563EB">
-          <animateMotion dur="1.6s" repeatCount="indefinite" path="M174,176 L210,208"/>
-        </circle>
-        <!-- hub -> battery (surplus/export direction) -->
-        <circle id="dotExport" r="3.5" fill="#0D9488">
-          <animateMotion dur="1.6s" repeatCount="indefinite" path="M126,176 L90,208"/>
-        </circle>
-        <!-- battery -> hub (deficit/import direction) -->
-        <circle id="dotImport" r="3.5" fill="#DC2626" class="hidden">
-          <animateMotion dur="1.6s" repeatCount="indefinite" path="M90,208 L126,176"/>
-        </circle>
+        <!-- device tier connections (status-driven: green solid = on, gray dashed = off) -->
+        <line id="link1" class="devlink off" x1="170" y1="210" x2="300" y2="285" stroke-width="2.5"/>
+        <line id="link2" class="devlink off" x1="170" y1="210" x2="170" y2="360" stroke-width="2.5"/>
+        <line id="link3" class="devlink off" x1="170" y1="210" x2="40" y2="285" stroke-width="2.5"/>
+        <line id="link4" class="devlink off" x1="170" y1="210" x2="40" y2="135" stroke-width="2.5"/>
+
+        <!-- Hub / controller -->
+        <circle cx="170" cy="210" r="44" fill="#F0F3F7" stroke="#CBD5E1" stroke-width="2"/>
+        <text x="170" y="196" text-anchor="middle" font-size="8.5" fill="#64748B" font-family="sans-serif" letter-spacing="1">CONTROLLER</text>
+        <text id="svgNetVal" x="170" y="219" text-anchor="middle" font-size="16" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
 
         <!-- Solar node -->
-        <circle cx="150" cy="42" r="30" fill="#FFFFFF" stroke="#E8912A" stroke-width="2"/>
-        <text x="150" y="38" text-anchor="middle" font-size="18" fill="#E8912A">&#9728;</text>
-        <text x="150" y="14" text-anchor="middle" font-size="9" fill="#64748B" font-family="sans-serif">SOLAR</text>
-        <text id="svgSolarVal" x="150" y="52" text-anchor="middle" font-size="10" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
-
-        <!-- Hub -->
-        <circle cx="150" cy="150" r="44" fill="#F0F3F7" stroke="#CBD5E1" stroke-width="2"/>
-        <text x="150" y="144" text-anchor="middle" font-size="9" fill="#64748B" font-family="sans-serif">NET</text>
-        <text id="svgNetVal" x="150" y="163" text-anchor="middle" font-size="17" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
-
-        <!-- Battery/Grid node -->
-        <circle cx="68" cy="235" r="28" fill="#FFFFFF" stroke="#0D9488" stroke-width="2"/>
-        <text id="svgBattIcon" x="68" y="231" text-anchor="middle" font-size="16" fill="#0D9488">&#128267;</text>
-        <text id="svgBattLabel" x="68" y="209" text-anchor="middle" font-size="8.5" fill="#64748B" font-family="sans-serif">SURPLUS</text>
+        <circle cx="170" cy="60" r="28" fill="#FFFFFF" stroke="#E8912A" stroke-width="2"/>
+        <text x="170" y="56" text-anchor="middle" font-size="16" fill="#E8912A">&#9728;</text>
+        <text x="170" y="26" text-anchor="middle" font-size="9" fill="#64748B" font-family="sans-serif">SOLAR</text>
+        <text id="svgSolarVal" x="170" y="70" text-anchor="middle" font-size="9.5" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
 
         <!-- Home node -->
-        <circle cx="232" cy="235" r="28" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
-        <text x="232" y="231" text-anchor="middle" font-size="16" fill="#2563EB">&#127968;</text>
-        <text x="232" y="209" text-anchor="middle" font-size="8.5" fill="#64748B" font-family="sans-serif">HOME</text>
-        <text id="svgLoadVal" x="232" y="252" text-anchor="middle" font-size="9.5" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+        <circle cx="300" cy="135" r="26" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+        <text x="300" y="131" text-anchor="middle" font-size="15" fill="#2563EB">&#127968;</text>
+        <text x="300" y="103" text-anchor="middle" font-size="8.5" fill="#64748B" font-family="sans-serif">HOME</text>
+        <text id="svgLoadVal" x="300" y="145" text-anchor="middle" font-size="9" fill="#0F172A" font-family="ui-monospace,monospace" font-weight="700">-- W</text>
+
+        <!-- Priority device nodes -->
+        <g id="devnode1">
+          <circle cx="300" cy="285" r="26" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" class="devcircle"/>
+          <circle cx="322" cy="264" r="5" fill="#94A3B8" stroke="#FFFFFF" stroke-width="1.5" class="statusdot"/>
+          <text class="devicon" x="300" y="290" text-anchor="middle" font-size="15">&#9889;</text>
+          <text class="devname" x="300" y="322" text-anchor="middle" font-size="9" fill="#0F172A" font-family="sans-serif" font-weight="600">Load</text>
+          <text x="300" y="333" text-anchor="middle" font-size="7.5" fill="#94A3B8" font-family="sans-serif">PRIORITY 1</text>
+        </g>
+        <g id="devnode2">
+          <circle cx="170" cy="360" r="26" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" class="devcircle"/>
+          <circle cx="192" cy="339" r="5" fill="#94A3B8" stroke="#FFFFFF" stroke-width="1.5" class="statusdot"/>
+          <text class="devicon" x="170" y="365" text-anchor="middle" font-size="15">&#128268;</text>
+          <text class="devname" x="170" y="397" text-anchor="middle" font-size="9" fill="#0F172A" font-family="sans-serif" font-weight="600">Load</text>
+          <text x="170" y="408" text-anchor="middle" font-size="7.5" fill="#94A3B8" font-family="sans-serif">PRIORITY 2</text>
+        </g>
+        <g id="devnode3">
+          <circle cx="40" cy="285" r="26" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" class="devcircle"/>
+          <circle cx="62" cy="264" r="5" fill="#94A3B8" stroke="#FFFFFF" stroke-width="1.5" class="statusdot"/>
+          <text class="devicon" x="40" y="290" text-anchor="middle" font-size="15">&#128268;</text>
+          <text class="devname" x="40" y="322" text-anchor="middle" font-size="9" fill="#0F172A" font-family="sans-serif" font-weight="600">Load</text>
+          <text x="40" y="333" text-anchor="middle" font-size="7.5" fill="#94A3B8" font-family="sans-serif">PRIORITY 3</text>
+        </g>
+        <g id="devnode4">
+          <circle cx="40" cy="135" r="26" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" class="devcircle"/>
+          <circle cx="62" cy="114" r="5" fill="#94A3B8" stroke="#FFFFFF" stroke-width="1.5" class="statusdot"/>
+          <text class="devicon" x="40" y="140" text-anchor="middle" font-size="15">&#128268;</text>
+          <text class="devname" x="40" y="172" text-anchor="middle" font-size="9" fill="#0F172A" font-family="sans-serif" font-weight="600">Load</text>
+          <text x="40" y="183" text-anchor="middle" font-size="7.5" fill="#94A3B8" font-family="sans-serif">PRIORITY 4</text>
+        </g>
       </svg>
       <div class="flow-net-label" id="netSub">Waiting for data...</div>
       <div class="temp-badge" id="tempBadge">&#127777;&#65039; -- &deg;C</div>
     </div>
-
-    <div class="section-title">Dynamic Priority Cascade</div>
-    <div class="cascade" id="cascadeList"></div>
 
     <div class="section-title">Net Power History</div>
     <div class="chart-card"><canvas id="netChart"></canvas></div>
@@ -943,29 +975,19 @@ function renderDeviceDetail(){
     tempBadge.className = 'temp-badge' + (temp >= 55 ? ' hot' : temp >= 40 ? ' warm' : '');
   }
 
-  const exportDot = document.getElementById('dotExport');
-  const importDot = document.getElementById('dotImport');
-  const battIcon = document.getElementById('svgBattIcon');
-  const battLabel = document.getElementById('svgBattLabel');
-  if (net !== null && net < 0){
-    exportDot.classList.add('hidden'); importDot.classList.remove('hidden');
-    battIcon.textContent = '\u26A1'; battLabel.textContent = 'GRID DRAW';
-  } else {
-    exportDot.classList.remove('hidden'); importDot.classList.add('hidden');
-    battIcon.textContent = '\uD83D\uDD0B'; battLabel.textContent = 'SURPLUS';
-  }
-
-  // Priority cascade, using loadConfig mapping (rank -> relay -> state)
-  const cascadeEl = document.getElementById('cascadeList');
-  cascadeEl.innerHTML = [1,2,3,4].map(rank=>{
+  // Network topology: update each priority device node + its link to the hub
+  [1,2,3,4].forEach(rank=>{
     const cfg = lc['priority'+rank];
     const on = !!relays['relay'+cfg.relay];
-    return `<div class="tier ${on?'on':''}">
-      <div class="tier-icon">${cfg.icon}</div>
-      <div class="tier-name"><div class="tn">${escapeHtml(cfg.name)}</div><div class="tp">Priority ${rank}</div></div>
-      <div class="tier-state">${on?'ON':'OFF'}</div>
-    </div>`;
-  }).join('');
+    const node = document.getElementById('devnode'+rank);
+    node.querySelector('.devcircle').classList.toggle('on', on);
+    node.querySelector('.statusdot').classList.toggle('on', on);
+    node.querySelector('.devicon').textContent = cfg.icon;
+    node.querySelector('.devname').textContent = cfg.name;
+    const link = document.getElementById('link'+rank);
+    link.classList.toggle('on', on);
+    link.classList.toggle('off', !on);
+  });
 
   // Settings: name field
   if (!document.getElementById('renameInput').dataset.dirty){
