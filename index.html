@@ -121,32 +121,43 @@
 
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
 
-  .gauge-card{
-    background:linear-gradient(160deg,#FFFFFF,#FAFBFC);
-    border:1px solid var(--border);border-radius:18px;padding:16px 12px 14px;
-    text-align:center;
-    box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 20px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
-    transform:translateY(0);
-    transition:transform .18s ease, box-shadow .18s ease;
+  .hero-gauge-card{
+    background:linear-gradient(165deg,#182129,#0F1826);
+    border-radius:24px;padding:28px 20px 22px;margin-bottom:14px;text-align:center;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 16px 32px rgba(15,23,42,0.18);
+    position:relative;overflow:hidden;
   }
-  .gauge-card:active{
-    transform:translateY(2px) scale(0.98);
-    box-shadow: 0 1px 1px rgba(15,23,42,0.05), 0 2px 6px rgba(15,23,42,0.08);
-  }
+  .hero-gauge-card::before{content:'';position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:220px;height:220px;background:radial-gradient(circle,rgba(13,148,136,0.25),transparent 70%);}
+  .hero-gauge-wrap{position:relative;width:170px;height:170px;margin:0 auto 16px;}
+  .hero-gauge-wrap svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 4px 8px rgba(0,0,0,0.25));}
+  .hero-gauge-track{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:11;}
+  .hero-gauge-fill{fill:none;stroke-width:11;stroke-linecap:round;stroke-dasharray:427.3;stroke-dashoffset:427.3;transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.2,.64,1);}
+  .hero-gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;}
+  .hero-gauge-label{font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:.1em;margin-bottom:6px;}
+  .hero-gauge-value{font-family:var(--mono);font-size:30px;font-weight:700;color:#fff;}
+  .hero-gauge-icon{font-size:18px;margin-top:6px;}
+  #netStatCard.neg .hero-gauge-value{color:#FCA5A5;}
 
-  .gauge-wrap{position:relative;width:88px;height:88px;margin:0 auto 8px;}
-  .gauge-wrap svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 2px 3px rgba(15,23,42,0.12));}
-  .gauge-track{fill:none;stroke:var(--card2);stroke-width:8;}
-  .gauge-fill{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:263.9;stroke-dashoffset:263.9;transition:stroke-dashoffset 1.1s cubic-bezier(.34,1.2,.64,1);}
-  .gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .gauge-icon{font-size:15px;margin-bottom:2px;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.1));}
-  .gauge-value{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);}
-  .gauge-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .hero-substats{display:flex;justify-content:center;gap:22px;font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:14px;position:relative;z-index:1;}
+  .hero-substats b{font-family:var(--mono);color:#fff;margin-left:4px;}
+  .hero-substats .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;}
+  .hero-substats .dot.solar{background:#FDBA5C;}
+  .hero-substats .dot.load{background:#60A5FA;}
 
-  #netStatCard.pos .gauge-value{color:var(--pos);}
-  #netStatCard.neg .gauge-value{color:var(--neg);}
-  #tempStatCard.warm .gauge-value{color:#D97706;}
-  #tempStatCard.hot .gauge-value{color:var(--neg);}
+  .hero-gauge-card .status-banner{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);margin:0;position:relative;z-index:1;}
+  .hero-gauge-card .status-banner.pos{background:rgba(13,148,136,0.25);border-color:rgba(94,234,212,0.3);color:#5EEAD4;}
+  .hero-gauge-card .status-banner.neg{background:rgba(220,38,38,0.2);border-color:rgba(252,165,165,0.3);color:#FCA5A5;}
+
+  .pill-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px;}
+  .pill-card{border-radius:16px;padding:14px 8px;text-align:center;box-shadow:0 6px 16px rgba(15,23,42,0.12);transition:transform .15s ease;}
+  .pill-card:active{transform:scale(0.95);}
+  .pill-card.pill-amber{background:linear-gradient(160deg,#FDBA5C,#E8912A);}
+  .pill-card.pill-blue{background:linear-gradient(160deg,#60A5FA,#2563EB);}
+  .pill-card:not(.pill-amber):not(.pill-blue){background:linear-gradient(160deg,#5EEAD4,#0D9488);}
+  .pill-card.hot{background:linear-gradient(160deg,#FCA5A5,#DC2626) !important;}
+  .pill-icon{font-size:18px;margin-bottom:6px;}
+  .pill-value{font-family:var(--mono);font-size:15px;font-weight:700;color:#fff;}
+  .pill-label{font-size:10px;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
 
   .section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px 2px;}
 
@@ -489,57 +500,48 @@
 
   <!-- Dashboard tab -->
   <div id="tab-dashboard">
-    <div class="status-banner" id="netStatusBanner">Waiting for data...</div>
-
     <svg width="0" height="0" style="position:absolute">
       <defs>
-        <linearGradient id="gradSolar" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#FDBA5C"/><stop offset="100%" stop-color="#D9631F"/>
-        </linearGradient>
-        <linearGradient id="gradLoad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#2563EB"/>
-        </linearGradient>
         <linearGradient id="gradNetPos" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#5EEAD4"/><stop offset="100%" stop-color="#0D9488"/>
         </linearGradient>
         <linearGradient id="gradNetNeg" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#FCA5A5"/><stop offset="100%" stop-color="#DC2626"/>
         </linearGradient>
-        <linearGradient id="gradTemp" x1="0%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stop-color="#60A5FA"/><stop offset="40%" stop-color="#0D9488"/>
-          <stop offset="70%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#DC2626"/>
-        </linearGradient>
       </defs>
     </svg>
 
-    <div class="stat-grid">
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100"><circle class="gauge-track" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="gaugeSolar" cx="50" cy="50" r="42" stroke="url(#gradSolar)"/></svg>
-          <div class="gauge-center"><div class="gauge-icon">&#9728;&#65039;</div><div class="gauge-value" id="statSolar">--</div></div>
+    <div class="hero-gauge-card" id="netStatCard">
+      <div class="hero-gauge-wrap">
+        <svg viewBox="0 0 160 160"><circle class="hero-gauge-track" cx="80" cy="80" r="68"/><circle class="hero-gauge-fill" id="gaugeNet" cx="80" cy="80" r="68" stroke="url(#gradNetPos)"/></svg>
+        <div class="hero-gauge-center">
+          <div class="hero-gauge-label">NET POWER</div>
+          <div class="hero-gauge-value" id="statNet">--</div>
+          <div class="hero-gauge-icon">&#9889;</div>
         </div>
-        <div class="gauge-label">Solar Generation</div>
       </div>
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100"><circle class="gauge-track" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="gaugeLoad" cx="50" cy="50" r="42" stroke="url(#gradLoad)"/></svg>
-          <div class="gauge-center"><div class="gauge-icon">&#127968;</div><div class="gauge-value" id="statLoad">--</div></div>
-        </div>
-        <div class="gauge-label">Home Load</div>
+      <div class="hero-substats">
+        <div class="hero-substat"><span class="dot solar"></span>Solar <b id="statSolar">--</b></div>
+        <div class="hero-substat"><span class="dot load"></span>Load <b id="statLoad">--</b></div>
       </div>
-      <div class="gauge-card" id="netStatCard">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100"><circle class="gauge-track" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="gaugeNet" cx="50" cy="50" r="42" stroke="url(#gradNetPos)"/></svg>
-          <div class="gauge-center"><div class="gauge-icon">&#9889;</div><div class="gauge-value" id="statNet">--</div></div>
-        </div>
-        <div class="gauge-label">Net Power</div>
+      <div class="status-banner" id="netStatusBanner">Waiting for data...</div>
+    </div>
+
+    <div class="pill-grid">
+      <div class="pill-card pill-amber">
+        <div class="pill-icon">&#9728;&#65039;</div>
+        <div class="pill-value" id="pillSolar">-- W</div>
+        <div class="pill-label">Solar</div>
       </div>
-      <div class="gauge-card" id="tempStatCard">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100"><circle class="gauge-track" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="gaugeTemp" cx="50" cy="50" r="42" stroke="url(#gradTemp)"/></svg>
-          <div class="gauge-center"><div class="gauge-icon">&#127777;&#65039;</div><div class="gauge-value" id="statTemp">--</div></div>
-        </div>
-        <div class="gauge-label">Temperature</div>
+      <div class="pill-card pill-blue">
+        <div class="pill-icon">&#127968;</div>
+        <div class="pill-value" id="pillLoad">-- W</div>
+        <div class="pill-label">Load</div>
+      </div>
+      <div class="pill-card" id="pillTempCard">
+        <div class="pill-icon">&#127777;&#65039;</div>
+        <div class="pill-value" id="statTemp">--&deg;C</div>
+        <div class="pill-label">Temp</div>
       </div>
     </div>
 
@@ -972,26 +974,19 @@ function renderDeviceDetail(){
 
   const solarW = sys.solarW, loadW = sys.loadW;
   const net = typeof sys.netW === 'number' ? sys.netW : null;
-  const GAUGE_CIRC = 263.9;
+  const HERO_GAUGE_CIRC = 427.3;
 
-  function setGauge(gaugeId, valueEl, value, unit, maxVal, decimals){
-    const gaugeEl = document.getElementById(gaugeId);
-    if (typeof value !== 'number' || isNaN(value)){
-      gaugeEl.style.strokeDashoffset = GAUGE_CIRC;
-      document.getElementById(valueEl).textContent = '--';
-      return;
-    }
-    const pct = Math.max(0, Math.min(100, (Math.abs(value) / maxVal) * 100));
-    gaugeEl.style.strokeDashoffset = GAUGE_CIRC * (1 - pct / 100);
-    const el = document.getElementById(valueEl);
-    const prefix = value > 0 && unit === ' W' && valueEl === 'statNet' ? '+' : '';
-    animateCounter(el, value, prefix, decimals, unit);
+  // Hero gauge: Net Power only (r=68, larger)
+  const heroGaugeEl = document.getElementById('gaugeNet');
+  if (net === null){
+    heroGaugeEl.style.strokeDashoffset = HERO_GAUGE_CIRC;
+    document.getElementById('statNet').textContent = '--';
+  } else {
+    const pct = Math.max(0, Math.min(100, (Math.abs(net) / 5000) * 100));
+    heroGaugeEl.style.strokeDashoffset = HERO_GAUGE_CIRC * (1 - pct / 100);
+    heroGaugeEl.setAttribute('stroke', net < 0 ? 'url(#gradNetNeg)' : 'url(#gradNetPos)');
+    animateCounter(document.getElementById('statNet'), net, net > 0 ? '+' : '', 0, ' W');
   }
-
-  setGauge('gaugeSolar', 'statSolar', solarW, ' W', 5000, 0);
-  setGauge('gaugeLoad', 'statLoad', loadW, ' W', 5000, 0);
-  setGauge('gaugeNet', 'statNet', net, ' W', 5000, 0);
-  document.getElementById('gaugeNet').setAttribute('stroke', net !== null && net < 0 ? 'url(#gradNetNeg)' : 'url(#gradNetPos)');
 
   const netCard = document.getElementById('netStatCard');
   netCard.classList.toggle('pos', net !== null && net >= 0);
@@ -1003,11 +998,18 @@ function renderDeviceDetail(){
   banner.textContent = net===null ? 'Waiting for data...' :
     (net>=0 ? 'Surplus - solar is covering the load' : 'Deficit - drawing extra from battery/grid');
 
+  // Hero substats (compact solar/load readout)
+  document.getElementById('statSolar').textContent = fmt(solarW) + ' W';
+  document.getElementById('statLoad').textContent = fmt(loadW) + ' W';
+
+  // Vibrant stat pills
+  document.getElementById('pillSolar').textContent = fmt(solarW) + ' W';
+  document.getElementById('pillLoad').textContent = fmt(loadW) + ' W';
+
   const temp = typeof sys.temperatureC === 'number' ? sys.temperatureC : null;
-  const tempCard = document.getElementById('tempStatCard');
-  setGauge('gaugeTemp', 'statTemp', temp, '\u00b0C', 100, 1);
-  tempCard.classList.toggle('warm', temp !== null && temp >= 40 && temp < 55);
-  tempCard.classList.toggle('hot', temp !== null && temp >= 55);
+  const tempPillCard = document.getElementById('pillTempCard');
+  document.getElementById('statTemp').textContent = temp===null ? '--\u00b0C' : temp.toFixed(1) + '\u00b0C';
+  tempPillCard.classList.toggle('hot', temp !== null && temp >= 55);
 
   // Priority load cards
   const loadGrid = document.getElementById('loadGrid');
